@@ -18,7 +18,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import Link from 'next/link'
-import { MODEL_CONFIGS, AIModel } from '@/shared/types'
+import { MODEL_CONFIGS, AIModel } from '../../../shared/types'
 
 const quickActions = [
   {
