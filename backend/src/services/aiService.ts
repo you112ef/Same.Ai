@@ -72,7 +72,7 @@ export class AIService {
       const config = MODEL_CONFIGS[model]
       const formattedMessages = this.formatMessagesForOpenAI(messages)
 
-      const stream = await this.openai.chat.completions.create({
+      const stream = await this.openai!.chat.completions.create({
         model: config.name,
         messages: formattedMessages,
         max_tokens: Math.min(config.maxTokens, 2000), // Limit response length
@@ -124,7 +124,7 @@ export class AIService {
     } catch (error) {
       console.error('Anthropic API error:', error)
       yield {
-        content: 'عذراً، حدث خطأ في الاتصال بخدمة Claude. يرجى المحاولة مرة أخرى.',
+        content: 'عذراً، حدث خطأ في الاتصال بخدمة Claude. ير��ى المحاولة مرة أخرى.',
         finishReason: 'stop'
       }
     }
@@ -332,7 +332,7 @@ ${code}
 
     return {
       suggestions: ['تم مراجعة الكود بنجاح'],
-      issues: ['لم يتم العثور على مشاكل واضحة'],
+      issues: ['لم يتم العثو�� على مشاكل واضحة'],
       rating: 7
     }
   }
