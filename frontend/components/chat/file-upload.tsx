@@ -16,7 +16,7 @@ import {
   Check,
   Loader2
 } from 'lucide-react'
-import { FileType } from '@/shared/types'
+import { FileType } from '../../../../shared/types'
 import { useToast } from '@/hooks/use-toast'
 
 interface UploadedFile {
