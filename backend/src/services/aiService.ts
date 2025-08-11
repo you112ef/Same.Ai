@@ -10,21 +10,31 @@ interface AIResponseChunk {
 }
 
 export class AIService {
-  private openai: OpenAI
-  private anthropic: Anthropic
-  private googleAI: GoogleGenerativeAI
+  private openai?: OpenAI
+  private anthropic?: Anthropic
+  private googleAI?: GoogleGenerativeAI
 
   constructor() {
-    // Initialize AI clients
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    })
+    // Initialize AI clients only if API keys are available
+    try {
+      if (process.env.OPENAI_API_KEY) {
+        this.openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY
+        })
+      }
 
-    this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || ''
-    })
+      if (process.env.ANTHROPIC_API_KEY) {
+        this.anthropic = new Anthropic({
+          apiKey: process.env.ANTHROPIC_API_KEY
+        })
+      }
 
-    this.googleAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '')
+      if (process.env.GOOGLE_AI_API_KEY) {
+        this.googleAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+      }
+    } catch (error) {
+      console.warn('Failed to initialize some AI services:', error)
+    }
   }
 
   async *generateResponse(messages: Message[], model: AIModel): AsyncGenerator<AIResponseChunk> {
