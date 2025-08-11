@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { ChatInterface } from '@/components/chat/chat-interface'
-import { AIModel } from '@/shared/types'
+import { AIModel } from '../../../../shared/types'
 
 export default function NewChatPage() {
   const router = useRouter()
