@@ -9,7 +9,7 @@ import {
   CreateConversationRequest,
   SendMessageRequest,
   PaginatedResponse
-} from '@/shared/types'
+} from '../../../shared/types'
 import { getToken, getRefreshToken, setToken, clearTokens } from '@/hooks/use-auth'
 
 // Create axios instance
