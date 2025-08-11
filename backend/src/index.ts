@@ -142,19 +142,29 @@ process.on('SIGINT', async () => {
 // Start server
 const startServer = async () => {
   try {
-    // Connect to Redis
-    await redis.connect()
-    console.log('✅ Connected to Redis')
-    
-    // Test database connection
-    await prisma.$connect()
-    console.log('✅ Connected to PostgreSQL')
-    
-    // Start server
+    // Try to connect to Redis (optional)
+    try {
+      await redis.connect()
+      console.log('✅ Connected to Redis')
+    } catch (redisError) {
+      console.log('⚠️  Redis not available, continuing without caching')
+    }
+
+    // Try to connect to database (optional for development)
+    try {
+      await prisma.$connect()
+      console.log('✅ Connected to PostgreSQL')
+    } catch (dbError) {
+      console.log('⚠️  Database not available, some features may not work')
+      console.log('💡 To set up database: install PostgreSQL and update DATABASE_URL in .env')
+    }
+
+    // Start server regardless of DB/Redis status
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`)
       console.log(`📊 Health check: http://localhost:${PORT}/health`)
       console.log(`🔗 Socket.IO ready for connections`)
+      console.log(`🌐 Frontend should be available at: http://localhost:3000`)
     })
   } catch (error) {
     console.error('❌ Failed to start server:', error)
