@@ -39,15 +39,24 @@ export class AIService {
 
   async *generateResponse(messages: Message[], model: AIModel): AsyncGenerator<AIResponseChunk> {
     const config = MODEL_CONFIGS[model]
-    
+
     switch (config.provider) {
       case 'openai':
+        if (!this.openai) {
+          throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.')
+        }
         yield* this.generateOpenAIResponse(messages, model)
         break
       case 'anthropic':
+        if (!this.anthropic) {
+          throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.')
+        }
         yield* this.generateAnthropicResponse(messages, model)
         break
       case 'google':
+        if (!this.googleAI) {
+          throw new Error('Google AI API key not configured. Please set GOOGLE_AI_API_KEY environment variable.')
+        }
         yield* this.generateGoogleResponse(messages, model)
         break
       case 'meta':
