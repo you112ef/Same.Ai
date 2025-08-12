@@ -1,19 +1,19 @@
 import type { Metadata } from 'next'
-import { Cairo } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/toaster'
 
-const cairo = Cairo({ 
-  subsets: ['arabic', 'latin'],
+const inter = Inter({
+  subsets: ['latin'],
   display: 'swap',
-  variable: '--font-cairo'
+  variable: '--font-inter'
 })
 
 export const metadata: Metadata = {
-  title: 'Same.Ai - منصة الذكاء الاصطناعي الموحدة',
-  description: 'تفاعل مع نماذج الذكاء الاصطناعي المتعددة في مكان واحد - GPT، Claude، Gemini وأكثر',
-  keywords: ['ذكاء اصطناعي', 'AI', 'GPT', 'Claude', 'Gemini', 'محادثة', 'Same.Ai'],
+  title: 'Same - Build fullstack web apps by prompting',
+  description: 'Make anything. Build fullstack web apps by prompting.',
+  keywords: ['AI', 'web development', 'fullstack', 'prompting', 'Claude', 'same'],
   authors: [{ name: 'Same.Ai Team' }],
   creator: 'Same.Ai',
   publisher: 'Same.Ai',
@@ -63,8 +63,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl" className={cairo.variable}>
-      <body className={`${cairo.className} antialiased`}>
+    <html lang="en" dir="ltr" className={inter.variable}>
+      <body className={`${inter.className} antialiased`}>
         <Providers>
           {children}
           <Toaster />
