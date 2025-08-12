@@ -82,7 +82,7 @@ const appExamples: AppExample[] = [
   }
 ]
 
-const modelOptions = [
+const modelOptions: ModelOption[] = [
   {
     id: 'claude-4-sonnet',
     name: 'Claude 4 Sonnet',
@@ -157,7 +157,7 @@ export default function HomePage() {
       'تحليل الطلب...',
       'اختيار التقنيات المناسبة...',
       'إنشاء هيكل المشروع...',
-      'توليد المكونات...',
+      'توليد المكونا��...',
       'إعداد قاعدة البيانات...',
       'تطبيق التصميم...',
       'إضافة الوظائف...',
@@ -502,7 +502,7 @@ export default function HomePage() {
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                       <div className="text-2xl mb-2">🚀</div>
-                      <h4 className="font-semibold text-blue-900 mb-1">للمشاريع السر��عة</h4>
+                      <h4 className="font-semibold text-blue-900 mb-1">للمشاريع السريعة</h4>
                       <p className="text-sm text-blue-700">Claude 3 Haiku أو Gemini Pro</p>
                     </div>
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
