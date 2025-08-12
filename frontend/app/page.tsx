@@ -217,7 +217,7 @@ export default function HomePage() {
                   <span className="text-sm font-medium text-gray-700">إنشاء سريع</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-                  <span className="text-2xl mb-2">🎨</span>
+                  <span className="text-2xl mb-2">��</span>
                   <span className="text-sm font-medium text-gray-700">تصميم حديث</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
@@ -294,38 +294,154 @@ export default function HomePage() {
 
             {/* Examples Section */}
             {showExamples && (
-              <div className="w-full max-w-6xl">
-                <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
-                  أو جرب أحد هذه الأمثلة
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {appExamples.map((example) => (
-                    <div
-                      key={example.id}
-                      onClick={() => selectExample(example)}
-                      className="bg-white border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-black hover:shadow-lg transition-all group"
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="text-2xl">{example.icon}</span>
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-black">
-                          {example.title}
-                        </h3>
+              <div className="w-full max-w-6xl space-y-16">
+                <div>
+                  <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
+                    أو جرب أحد هذه الأمثلة
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {appExamples.map((example) => (
+                      <div
+                        key={example.id}
+                        onClick={() => selectExample(example)}
+                        className="bg-white border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-black hover:shadow-lg transition-all group"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="text-2xl">{example.icon}</span>
+                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-black">
+                            {example.title}
+                          </h3>
+                        </div>
+                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                          {example.description}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {example.features.map((feature, index) => (
+                            <span
+                              key={index}
+                              className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                            >
+                              {feature}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                        {example.description}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {example.features.map((feature, index) => (
-                          <span
-                            key={index}
-                            className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                          >
-                            {feature}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Model Comparison Section */}
+                <div>
+                  <h2 className="text-2xl font-bold text-center mb-4 text-gray-900">
+                    اختر النموذج المناسب لمشروعك
+                  </h2>
+                  <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+                    كل نموذج له نقاط قوة مختلفة. اختر الأنسب حسب نوع التطبيق والميزانية المتاحة
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {modelOptions.map((model) => (
+                      <div
+                        key={model.id}
+                        onClick={() => setSelectedModel(model.id)}
+                        className={`bg-white border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg ${
+                          selectedModel === model.id
+                            ? 'border-black shadow-lg'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="text-2xl">{model.icon}</span>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{model.name}</h3>
+                            <p className="text-sm text-gray-600">{model.provider}</p>
+                          </div>
+                        </div>
+
+                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                          {model.description}
+                        </p>
+
+                        {/* Performance Bars */}
+                        <div className="space-y-3 mb-4">
+                          <div>
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <span>السرعة</span>
+                              <span>{model.speed}/5</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full transition-all"
+                                style={{ width: `${(model.speed / 5) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <span>الجودة</span>
+                              <span>{model.quality}/5</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-green-600 h-2 rounded-full transition-all"
+                                style={{ width: `${(model.quality / 5) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cost Badge */}
+                        <div className="flex justify-between items-center mb-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            model.cost === 'low' ? 'bg-green-100 text-green-800' :
+                            model.cost === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            تكلفة {model.cost === 'low' ? 'منخفضة' : model.cost === 'medium' ? 'متوسطة' : 'عالية'}
                           </span>
-                        ))}
+                          {selectedModel === model.id && (
+                            <span className="bg-black text-white px-2 py-1 rounded-full text-xs font-medium">
+                              ✓ محدد
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Best For */}
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">الأفضل لـ:</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {model.features.map((feature, index) => (
+                              <span
+                                key={index}
+                                className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
+                              >
+                                {feature}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* Model Recommendations */}
+                  <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                      <div className="text-2xl mb-2">🚀</div>
+                      <h4 className="font-semibold text-blue-900 mb-1">للمشاريع السريعة</h4>
+                      <p className="text-sm text-blue-700">Claude 3 Haiku أو Gemini Pro</p>
                     </div>
-                  ))}
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                      <div className="text-2xl mb-2">🎯</div>
+                      <h4 className="font-semibold text-purple-900 mb-1">للمشاريع المعقدة</h4>
+                      <p className="text-sm text-purple-700">GPT-4 أو Claude 4 Sonnet</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                      <div className="text-2xl mb-2">💰</div>
+                      <h4 className="font-semibold text-green-900 mb-1">للميزانية المحدودة</h4>
+                      <p className="text-sm text-green-700">Llama 3 أو Claude 3 Haiku</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
