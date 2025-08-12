@@ -19,22 +19,20 @@ export default function HomePage() {
         {/* Logo - Exact match from image */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            {/* Window-like icon from same.new */}
-            <div className="relative">
-              <svg width="24" height="20" viewBox="0 0 24 20" fill="none">
-                <rect x="1" y="2" width="9" height="7" rx="1" fill="white"/>
-                <rect x="12" y="2" width="9" height="7" rx="1" fill="white"/>
-                <rect x="1" y="11" width="9" height="7" rx="1" fill="white"/>
-                <rect x="12" y="11" width="9" height="7" rx="1" fill="white"/>
-              </svg>
+            {/* Grid icon like in same.new */}
+            <div className="grid grid-cols-2 gap-0.5 w-5 h-5">
+              <div className="w-2 h-2 bg-white rounded-sm"></div>
+              <div className="w-2 h-2 bg-white rounded-sm"></div>
+              <div className="w-2 h-2 bg-white rounded-sm"></div>
+              <div className="w-2 h-2 bg-white rounded-sm"></div>
             </div>
             <span className="text-2xl font-medium">same</span>
           </div>
         </div>
         
         {/* Header Icons - Exact match */}
-        <div className="flex items-center gap-5">
-          {/* Monitor/Screen Icon */}
+        <div className="flex items-center gap-6">
+          {/* Monitor Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
@@ -43,12 +41,13 @@ export default function HomePage() {
             </svg>
           </button>
           
-          {/* Database Icon */}
+          {/* Server/Database Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-              <ellipse cx="12" cy="5" rx="9" ry="3"/>
-              <path d="m3 5 0 14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
-              <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+              <rect x="3" y="4" width="18" height="5" rx="2"/>
+              <rect x="3" y="11" width="18" height="5" rx="2"/>
+              <path d="M7 8h0"/>
+              <path d="M7 15h0"/>
             </svg>
           </button>
           
@@ -59,10 +58,14 @@ export default function HomePage() {
             </svg>
           </button>
           
-          {/* Sidebar/Menu Icon */}
+          {/* Sidebar Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-              <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/>
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="15" x2="21" y2="15"/>
+              <line x1="3" y1="9" x2="5" y2="9"/>
+              <line x1="3" y1="15" x2="5" y2="15"/>
             </svg>
           </button>
           
@@ -74,9 +77,9 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center px-8 pt-20">
-        <div className="max-w-5xl mx-auto text-center space-y-12">
-          {/* Main Heading - Exact Typography */}
+      <main className="flex flex-col items-center justify-center px-8 pt-24">
+        <div className="max-w-5xl mx-auto text-center space-y-16">
+          {/* Main Heading */}
           <div className="space-y-6">
             <h1 className="text-8xl font-bold tracking-tight leading-tight text-white">
               Make anything
@@ -86,11 +89,11 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Input Form - Exact Design */}
-          <div className="w-full max-w-4xl mx-auto pt-8">
+          {/* Input Form */}
+          <div className="w-full max-w-4xl mx-auto">
             <form onSubmit={handleSubmit}>
-              <div className="relative bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-2xl">
-                <div className="flex items-center p-1">
+              <div className="relative bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+                <div className="flex items-center p-2">
                   {/* Attachment Icon */}
                   <button
                     type="button"
@@ -110,17 +113,17 @@ export default function HomePage() {
                   />
                   
                   {/* Right Section */}
-                  <div className="flex items-center gap-3 pr-3">
-                    {/* Model Selector - Exact Design */}
+                  <div className="flex items-center gap-3 pr-2">
+                    {/* Model Selector */}
                     <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
                       <span className="text-sm text-gray-200 font-medium">Agentic</span>
                       <span className="text-xs bg-gray-600 px-2 py-1 rounded text-gray-300 font-medium">max</span>
                     </div>
                     
-                    {/* Submit Button - Exact Design */}
+                    {/* Submit Button */}
                     <button
                       type="submit"
-                      className="flex items-center justify-center w-10 h-10 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                      className="flex items-center justify-center w-10 h-10 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
