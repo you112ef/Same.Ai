@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ModelSelectorDropdown } from '@/components/ui/model-selector-dropdown'
+import { useNotifications } from '@/components/ui/notification'
 
 interface AppExample {
   id: string
@@ -217,7 +218,7 @@ export default function HomePage() {
                   <span className="text-sm font-medium text-gray-700">إنشاء سريع</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-                  <span className="text-2xl mb-2">��</span>
+                  <span className="text-2xl mb-2">🎨</span>
                   <span className="text-sm font-medium text-gray-700">تصميم حديث</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
