@@ -17,7 +17,7 @@ interface AppExample {
 const appExamples: AppExample[] = [
   {
     id: 'booking',
-    title: 'نظام حجز المواعيد',
+    title: 'نظام حج�� المواعيد',
     description: 'منصة لحجز المواعيد مع تكامل التقويم',
     prompt: 'create a booking system for appointments with calendar integration, user authentication, and email notifications',
     icon: '📅',
@@ -167,7 +167,7 @@ export default function HomePage() {
       addNotification({
         type: 'error',
         title: 'خطأ في الاتصال',
-        message: 'تعذر الاتصال بالخادم، ��رجى المحاولة مرة أخرى',
+        message: 'تعذر الاتصال بالخادم، يرجى المحاولة مرة أخرى',
         duration: 5000
       })
     } finally {
@@ -186,6 +186,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <NotificationContainer />
       {/* Header */}
       <header className="w-full px-6 h-16 flex items-center justify-between border-b border-gray-100">
         {/* Logo */}
@@ -356,7 +357,7 @@ export default function HomePage() {
                     اختر النموذج المناسب لمشروعك
                   </h2>
                   <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-                    كل نموذج له نقاط قوة مختلفة. اختر الأنسب حسب نوع التطبيق والميزانية المتاحة
+                    كل نموذج له نقاط قوة مختلفة. ��ختر الأنسب حسب نوع التطبيق والميزانية المتاحة
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
