@@ -66,7 +66,7 @@ const appExamples: AppExample[] = [
     prompt: 'create a task management app with projects, deadlines, team collaboration, and progress tracking',
     icon: '✅',
     category: 'productivity',
-    features: ['إدار�� المشاريع', 'تتبع التقدم', 'تعاون الفريق', 'تذكيرات']
+    features: ['إدارة المشاريع', 'تتبع التقدم', 'تعاون الفريق', 'تذكيرات']
   }
 ]
 
@@ -258,21 +258,23 @@ export default function HomePage() {
                   {/* Bottom Bar */}
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 bg-gray-50 rounded-b-2xl">
                     {/* Model Selector */}
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value)}
-                        className="bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
-                      >
-                        {modelOptions.map(model => (
-                          <option key={model.id} value={model.id}>
-                            {model.icon} {model.name}
-                          </option>
-                        ))}
-                      </select>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                        <path d="m6 9 6 6 6-6"/>
-                      </svg>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-600 font-medium">النموذج:</span>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => {/* Toggle model selector */}}
+                          className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                        >
+                          <span className="text-sm">{modelOptions.find(m => m.id === selectedModel)?.icon}</span>
+                          <span className="text-sm font-medium text-gray-700">
+                            {modelOptions.find(m => m.id === selectedModel)?.name}
+                          </span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                            <path d="m6 9 6 6 6-6"/>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Submit Button */}
