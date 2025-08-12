@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { ModelSelectorDropdown } from '@/components/ui/model-selector-dropdown'
 
 interface AppExample {
   id: string
@@ -65,7 +66,7 @@ const appExamples: AppExample[] = [
     prompt: 'create a task management app with projects, deadlines, team collaboration, and progress tracking',
     icon: '✅',
     category: 'productivity',
-    features: ['إدارة المشاريع', 'تتبع التقدم', 'تعاون الفريق', 'تذكيرات']
+    features: ['إدار�� المشاريع', 'تتبع التقدم', 'تعاون الفريق', 'تذكيرات']
   }
 ]
 
