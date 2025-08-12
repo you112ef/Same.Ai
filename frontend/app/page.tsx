@@ -164,350 +164,234 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: 'white', 
-      fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-      margin: 0,
-      padding: 0
-    }}>
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header style={{ 
-        width: '100%', 
-        padding: '0 24px', 
-        height: '64px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: 'none'
-      }}>
+      <header className="w-full px-6 h-16 flex items-center justify-between border-b border-gray-100">
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" style={{ color: 'black' }}>
-              <g>
-                <rect x="0.5" y="0.5" width="7" height="7" rx="1.5" />
-                <rect x="9.5" y="0.5" width="7" height="7" rx="1.5" />
-                <rect x="18.5" y="0.5" width="1" height="7" rx="0.5" />
-                <rect x="0.5" y="9.5" width="7" height="7" rx="1.5" />
-                <rect x="9.5" y="9.5" width="7" height="7" rx="1.5" />
-                <rect x="18.5" y="9.5" width="1" height="7" rx="0.5" />
-                <rect x="0.5" y="18.5" width="7" height="1" rx="0.5" />
-                <rect x="9.5" y="18.5" width="7" height="1" rx="0.5" />
-                <rect x="18.5" y="18.5" width="1" height="1" rx="0.5" />
-              </g>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-black">
+              <rect x="3" y="3" width="6" height="6" rx="2" />
+              <rect x="15" y="3" width="6" height="6" rx="2" />
+              <rect x="3" y="15" width="6" height="6" rx="2" />
+              <rect x="15" y="15" width="6" height="6" rx="2" />
             </svg>
-            <span style={{ 
-              fontSize: '18px', 
-              fontWeight: '600', 
-              color: '#000000',
-              letterSpacing: '-0.025em'
-            }}>
-              same
-            </span>
+            <span className="text-xl font-bold text-black tracking-tight">same</span>
           </div>
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            padding: '4px', 
-            cursor: 'pointer',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#9ca3af'
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-              <path d="m4 16 4-4 4 4"/>
-              <path d="m16 4 4 4-4 4"/>
-            </svg>
-          </button>
         </div>
 
         {/* Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            color: '#6b7280', 
-            fontSize: '14px',
-            fontWeight: '400',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: 0
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-            Careers
+        <div className="flex items-center gap-6">
+          <button className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
+            معرض التطبيقات
           </button>
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            color: '#6b7280', 
-            fontSize: '14px',
-            fontWeight: '400',
-            cursor: 'pointer',
-            padding: 0
-          }}>
-            Docs
+          <button className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
+            الدعم
           </button>
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            color: '#6b7280', 
-            fontSize: '14px',
-            fontWeight: '400',
-            cursor: 'pointer',
-            padding: 0
-          }}>
-            Log in
+          <button className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
+            تسجيل الدخول
           </button>
-          <button style={{
-            backgroundColor: '#000000',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer'
-          }}>
-            Sign up
+          <button className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
+            إنشاء حساب
           </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        padding: '140px 24px 80px',
-        textAlign: 'center'
-      }}>
-        {/* Hero Title */}
-        <div style={{ marginBottom: '64px', maxWidth: '900px' }}>
-          <h1 style={{ 
-            fontSize: '80px', 
-            fontWeight: '700', 
-            color: '#000000', 
-            marginBottom: '24px',
-            lineHeight: '1',
-            margin: '0 0 24px 0',
-            letterSpacing: '-0.025em'
-          }}>
-            Make anything
-          </h1>
-          <p style={{ 
-            fontSize: '20px', 
-            color: '#6b7280', 
-            maxWidth: '500px', 
-            margin: '0 auto',
-            lineHeight: '1.4',
-            fontWeight: '400'
-          }}>
-            Build fullstack web apps by prompting
-          </p>
-        </div>
+      <main className="flex flex-col items-center px-6 py-12">
+        {!isGenerating ? (
+          <>
+            {/* Hero Section */}
+            <div className="text-center mb-16 max-w-4xl">
+              <h1 className="text-6xl md:text-7xl font-bold text-black mb-6 leading-tight">
+                اصنع أي شيء
+              </h1>
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                ابن تطبيقات ويب كاملة بالذكاء الاصطناعي من خلال وصف بسيط
+              </p>
 
-        {/* Prompt Input */}
-        <div style={{ width: '100%', maxWidth: '672px', marginBottom: '32px' }}>
-          <form onSubmit={handleSubmit}>
-            <div style={{ 
-              position: 'relative', 
-              backgroundColor: '#f5f5f5', 
-              borderRadius: '16px', 
-              border: 'none',
-              overflow: 'hidden'
-            }}>
-              {/* Input Field */}
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'flex-start', 
-                padding: '20px', 
-                paddingBottom: '60px'
-              }}>
-                <button type="button" style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  padding: '0', 
-                  marginRight: '12px', 
-                  marginTop: '2px',
-                  color: '#9ca3af',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.42 16.4a2 2 0 0 1-2.83-2.83l7.07-7.07"/>
-                  </svg>
-                </button>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="create a booking system for appointments with calendar integration"
-                  rows={1}
-                  disabled={isGenerating}
-                  style={{
-                    flex: 1,
-                    border: 'none',
-                    background: 'transparent',
-                    fontSize: '16px',
-                    outline: 'none',
-                    color: '#000000',
-                    resize: 'none',
-                    fontFamily: 'inherit',
-                    lineHeight: '1.5',
-                    overflow: 'hidden'
-                  }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = target.scrollHeight + 'px';
-                  }}
-                />
-                
-                {/* Tab indicator */}
-                <div style={{
-                  backgroundColor: '#e5e7eb',
-                  color: '#6b7280',
-                  padding: '2px 6px',
-                  borderRadius: '3px',
-                  fontSize: '11px',
-                  fontWeight: '500',
-                  marginLeft: '12px',
-                  marginTop: '2px'
-                }}>
-                  tab
+              {/* Features */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
+                  <span className="text-2xl mb-2">⚡</span>
+                  <span className="text-sm font-medium text-gray-700">إنشاء سريع</span>
+                </div>
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
+                  <span className="text-2xl mb-2">🎨</span>
+                  <span className="text-sm font-medium text-gray-700">تصميم حديث</span>
+                </div>
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
+                  <span className="text-2xl mb-2">📱</span>
+                  <span className="text-sm font-medium text-gray-700">متجاوب</span>
+                </div>
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
+                  <span className="text-2xl mb-2">🚀</span>
+                  <span className="text-sm font-medium text-gray-700">جاهز للنشر</span>
                 </div>
               </div>
+            </div>
 
-              {/* Bottom Bar */}
-              <div style={{ 
-                position: 'absolute', 
-                bottom: '0', 
-                left: '0', 
-                right: '0', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                padding: '14px 20px', 
-                backgroundColor: '#f5f5f5'
-              }}>
-                {/* Model Selector */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ 
-                    fontSize: '13px', 
-                    fontWeight: '500', 
-                    color: '#374151' 
-                  }}>
-                    claude-4-sonnet
+            {/* Prompt Input */}
+            <div className="w-full max-w-3xl mb-8">
+              <form onSubmit={handleSubmit}>
+                <div className="relative bg-gray-50 rounded-2xl border-2 border-transparent focus-within:border-black transition-colors">
+                  <div className="flex items-start p-6 pb-20">
+                    <button type="button" className="mr-3 mt-1 p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.42 16.4a2 2 0 0 1-2.83-2.83l7.07-7.07"/>
+                      </svg>
+                    </button>
+                    <textarea
+                      ref={textareaRef}
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="اكتب وصف التطبيق الذي تريد إنشاءه..."
+                      className="flex-1 bg-transparent border-none outline-none text-lg text-gray-900 placeholder-gray-500 resize-none min-h-[2rem] max-h-32"
+                      disabled={isGenerating}
+                      style={{ fontFamily: 'inherit' }}
+                    />
+                    <div className="mr-3 mt-1 bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium">
+                      Tab
+                    </div>
+                  </div>
+
+                  {/* Bottom Bar */}
+                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 bg-gray-50 rounded-b-2xl">
+                    {/* Model Selector */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
+                      >
+                        {modelOptions.map(model => (
+                          <option key={model.id} value={model.id}>
+                            {model.icon} {model.name}
+                          </option>
+                        ))}
+                      </select>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={!prompt.trim() || isGenerating}
+                      className="bg-black text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m5 12 14-7-7 14-2-7z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Examples Section */}
+            {showExamples && (
+              <div className="w-full max-w-6xl">
+                <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
+                  أو جرب أحد هذه الأمثلة
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {appExamples.map((example) => (
+                    <div
+                      key={example.id}
+                      onClick={() => selectExample(example)}
+                      className="bg-white border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-black hover:shadow-lg transition-all group"
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-2xl">{example.icon}</span>
+                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-black">
+                          {example.title}
+                        </h3>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                        {example.description}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {example.features.map((feature, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Generation Progress */
+          <div className="text-center max-w-lg mx-auto">
+            <div className="mb-8">
+              <div className="w-24 h-24 mx-auto mb-6 relative">
+                <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="#e5e7eb"
+                    strokeWidth="8"
+                    fill="none"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="#000000"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${generationProgress * 2.51} 251`}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold text-gray-900">
+                    {Math.round(generationProgress)}%
                   </span>
-                  <button type="button" style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    padding: '2px',
-                    cursor: 'pointer',
-                    color: '#6b7280',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                  </button>
                 </div>
-
-                {/* Submit Button */}
-                <button 
-                  type="submit"
-                  style={{
-                    backgroundColor: '#000000',
-                    color: 'white',
-                    borderRadius: '50%',
-                    border: 'none',
-                    width: '32px',
-                    height: '32px',
-                    cursor: (prompt.trim() && !isGenerating) ? 'pointer' : 'not-allowed',
-                    opacity: (prompt.trim() && !isGenerating) ? 1 : 0.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  disabled={!prompt.trim() || isGenerating}
-                >
-                  {isGenerating ? (
-                    <div style={{
-                      width: '14px',
-                      height: '14px',
-                      border: '2px solid #ffffff',
-                      borderTop: '2px solid transparent',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }} />
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="m5 12 14-7-7 14-2-7z"/>
-                    </svg>
-                  )}
-                </button>
               </div>
             </div>
-          </form>
-        </div>
 
-        {/* Generation Status */}
-        {isGenerating && (
-          <div style={{
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #e9ecef',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            textAlign: 'center',
-            maxWidth: '400px'
-          }}>
-            <div style={{ marginBottom: '8px' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                border: '3px solid #e9ecef',
-                borderTop: '3px solid #000000',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                margin: '0 auto'
-              }} />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              جاري إنشاء تطبيقك
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {currentStep}
+            </p>
+
+            <div className="bg-gray-50 rounded-xl p-6 text-right">
+              <h3 className="font-semibold text-gray-900 mb-3">ما يتم إنشاؤه:</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  تطبيق Next.js كامل
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  قاعدة بيانات مُعدة
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  تصميم متجاوب
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  معاينة مباشرة
+                </li>
+              </ul>
             </div>
-            <p style={{ 
-              fontSize: '14px', 
-              color: '#6b7280', 
-              margin: '0',
-              fontWeight: '500'
-            }}>
-              Generating your app...
-            </p>
-            <p style={{ 
-              fontSize: '12px', 
-              color: '#9ca3af', 
-              margin: '4px 0 0 0'
-            }}>
-              This may take a few moments
-            </p>
           </div>
         )}
       </main>
-
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   )
 }
