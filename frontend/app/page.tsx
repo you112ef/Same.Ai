@@ -17,7 +17,7 @@ interface AppExample {
 const appExamples: AppExample[] = [
   {
     id: 'booking',
-    title: 'نظام حج�� المواعيد',
+    title: 'نظام حجز المواعيد',
     description: 'منصة لحجز المواعيد مع تكامل التقويم',
     prompt: 'create a booking system for appointments with calendar integration, user authentication, and email notifications',
     icon: '📅',
@@ -31,7 +31,7 @@ const appExamples: AppExample[] = [
     prompt: 'create an e-commerce store with shopping cart, product catalog, payment integration, and user accounts',
     icon: '🛒',
     category: 'ecommerce',
-    features: ['كتالوج المنتجات', 'سلة التسوق', 'المدفوعات', 'إدارة المخزون']
+    features: ['كتالوج المنتجات', 'سلة التسوق', 'المدفوعات', 'إدارة ال��خزون']
   },
   {
     id: 'dashboard',
@@ -62,7 +62,7 @@ const appExamples: AppExample[] = [
   },
   {
     id: 'todo',
-    title: 'إدارة المهام',
+    title: 'إدار�� المهام',
     description: 'تطبيق لإدارة المهام والمشاريع',
     prompt: 'create a task management app with projects, deadlines, team collaboration, and progress tracking',
     icon: '✅',
@@ -182,6 +182,12 @@ export default function HomePage() {
   const selectExample = (example: AppExample) => {
     setPrompt(example.prompt)
     setShowExamples(false)
+    addNotification({
+      type: 'info',
+      title: 'تم اختيار المثال',
+      message: `تم تحديد مثال ${example.title}. يمكنك تعديل الوصف أو الضغط على إنشاء مباشرة`,
+      duration: 4000
+    })
   }
 
   return (
@@ -357,7 +363,7 @@ export default function HomePage() {
                     اختر النموذج المناسب لمشروعك
                   </h2>
                   <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-                    كل نموذج له نقاط قوة مختلفة. ��ختر الأنسب حسب نوع التطبيق والميزانية المتاحة
+                    كل نموذج له نقاط قوة مختلفة. اختر الأنسب حسب نوع التطبيق والميزانية المتاحة
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
