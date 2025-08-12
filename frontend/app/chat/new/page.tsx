@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Paperclip, ArrowUp, ChevronDown, Copy, ExternalLink, MoreHorizontal, Download, Share } from 'lucide-react'
+import { SameLogo } from '@/components/ui/same-logo'
 
 interface Message {
   id: string
@@ -103,11 +104,7 @@ To make this fully functional, we would need to:
             {/* Logo */}
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1">
-                <div className="w-6 h-6">
-                  <svg viewBox="0 0 24 24" className="w-full h-full">
-                    <path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6zM3 19h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6z" fill="currentColor"/>
-                  </svg>
-                </div>
+                <SameLogo className="w-6 h-6" />
                 <span className="text-xl font-semibold text-gray-900">same</span>
               </div>
               <Button variant="ghost" size="sm" className="p-1">
