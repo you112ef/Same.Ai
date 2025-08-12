@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Paperclip, ArrowUp, ChevronDown, Copy, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { SameLogo } from '@/components/ui/same-logo'
+import { ModelSelector } from '@/components/ui/model-selector'
 
 export default function HomePage() {
   const [prompt, setPrompt] = useState('')
@@ -93,14 +94,10 @@ export default function HomePage() {
               {/* Bottom Bar */}
               <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 bg-white border-t border-gray-100">
                 {/* Model Selector */}
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                  <span className="text-sm font-medium text-gray-700">
-                    {selectedModel}
-                  </span>
-                  <Button variant="ghost" size="sm" className="p-1">
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </div>
+                <ModelSelector
+                  selectedModel={selectedModel}
+                  onModelChange={setSelectedModel}
+                />
 
                 {/* Submit Button */}
                 <Button 
