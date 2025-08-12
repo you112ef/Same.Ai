@@ -31,7 +31,7 @@ const appExamples: AppExample[] = [
     prompt: 'create an e-commerce store with shopping cart, product catalog, payment integration, and user accounts',
     icon: '🛒',
     category: 'ecommerce',
-    features: ['كتالوج المنتجات', 'سلة التسوق', 'المدفوعات', 'إدارة ال��خزون']
+    features: ['كتالوج المنتجات', 'سلة التسوق', 'المدفوعات', 'إدارة المخزون']
   },
   {
     id: 'dashboard',
@@ -62,7 +62,7 @@ const appExamples: AppExample[] = [
   },
   {
     id: 'todo',
-    title: 'إدار�� المهام',
+    title: 'إدارة المهام',
     description: 'تطبيق لإدارة المهام والمشاريع',
     prompt: 'create a task management app with projects, deadlines, team collaboration, and progress tracking',
     icon: '✅',
@@ -72,10 +72,46 @@ const appExamples: AppExample[] = [
 ]
 
 const modelOptions = [
-  { id: 'claude-4-sonnet', name: 'Claude 4 Sonnet', description: 'متوازن وسريع', icon: '🤖' },
-  { id: 'gpt-4', name: 'GPT-4', description: 'قوي ومتطور', icon: '⚡' },
-  { id: 'gemini-pro', name: 'Gemini Pro', description: 'متعدد الوسائط', icon: '✨' },
-  { id: 'llama-3', name: 'Llama 3', description: 'مفتوح المصدر', icon: '🦙' }
+  {
+    id: 'claude-4-sonnet',
+    name: 'Claude 4 Sonnet',
+    description: 'متوازن وسريع، مثالي للمشاريع العامة',
+    icon: '🤖',
+    speed: 4,
+    quality: 4,
+    cost: 'medium' as const,
+    features: ['نصوص طويلة', 'تحليل الكود', 'إبداع']
+  },
+  {
+    id: 'gpt-4',
+    name: 'GPT-4',
+    description: 'قوي ومتطور، الأفضل للمهام المعقدة',
+    icon: '⚡',
+    speed: 3,
+    quality: 5,
+    cost: 'high' as const,
+    features: ['تحليل عميق', 'منطق', 'إبداع متقدم']
+  },
+  {
+    id: 'gemini-pro',
+    name: 'Gemini Pro',
+    description: 'متعدد الوسائط، يدعم النصوص والصور',
+    icon: '✨',
+    speed: 5,
+    quality: 4,
+    cost: 'low' as const,
+    features: ['متعدد الوسائط', 'سريع', 'فعال']
+  },
+  {
+    id: 'llama-3',
+    name: 'Llama 3',
+    description: 'مفتوح المصدر، موثوق وآمن',
+    icon: '🦙',
+    speed: 3,
+    quality: 4,
+    cost: 'low' as const,
+    features: ['مفتوح المصدر', 'خصوصية', 'شفا��ية']
+  }
 ]
 
 export default function HomePage() {
@@ -109,7 +145,7 @@ export default function HomePage() {
     const steps = [
       'تحليل الطلب...',
       'اختيار التقنيات المناسبة...',
-      'إنشاء هيكل المشروع...',
+      'إنشاء هيكل المشرو��...',
       'توليد المكونات...',
       'إعداد قاعدة البيانات...',
       'تطبيق التصميم...',
@@ -363,7 +399,7 @@ export default function HomePage() {
                     اختر النموذج المناسب لمشروعك
                   </h2>
                   <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-                    كل نموذج له نقاط قوة مختلفة. اختر الأنسب حسب نوع التطبيق والميزانية المتاحة
+                    كل نموذج له نقاط قوة مختلفة. اختر ��لأنسب حسب نوع التطبيق والميزانية المتاحة
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
