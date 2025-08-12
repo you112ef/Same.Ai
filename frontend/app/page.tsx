@@ -13,27 +13,30 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-6">
-        {/* Logo - Exact match from reference image */}
-        <div className="flex items-center gap-3">
-          {/* Complex logo icon like in the reference */}
-          <div className="relative w-8 h-6">
-            {/* Main rectangles */}
-            <div className="absolute top-0 left-0 w-3 h-2 bg-white rounded-sm"></div>
-            <div className="absolute top-0 right-0 w-3 h-2 bg-white rounded-sm"></div>
-            <div className="absolute bottom-0 left-0 w-3 h-2 bg-white rounded-sm"></div>
-            <div className="absolute bottom-0 right-0 w-3 h-2 bg-white rounded-sm"></div>
-            {/* Connecting elements */}
-            <div className="absolute top-0.5 left-2.5 w-3 h-0.5 bg-white"></div>
-            <div className="absolute bottom-0.5 left-2.5 w-3 h-0.5 bg-white"></div>
+      <header className="flex items-center justify-between px-8 py-5">
+        {/* Logo - Exact same.new design */}
+        <div className="flex items-center gap-2.5">
+          {/* Window-like logo icon */}
+          <div className="relative">
+            <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Top windows */}
+              <rect x="0" y="0" width="8" height="6" rx="1" fill="white"/>
+              <rect x="10" y="0" width="8" height="6" rx="1" fill="white"/>
+              {/* Bottom windows */}
+              <rect x="0" y="8" width="8" height="6" rx="1" fill="white"/>
+              <rect x="10" y="8" width="8" height="6" rx="1" fill="white"/>
+              {/* Connection lines */}
+              <rect x="8" y="2" width="2" height="1" fill="white"/>
+              <rect x="8" y="11" width="2" height="1" fill="white"/>
+            </svg>
           </div>
-          <span className="text-2xl font-medium">same</span>
+          <span className="text-xl font-medium">same</span>
         </div>
         
-        {/* Header Icons - Exact match from reference */}
-        <div className="flex items-center gap-6">
+        {/* Header Icons */}
+        <div className="flex items-center gap-5">
           {/* Monitor Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -43,7 +46,7 @@ export default function HomePage() {
             </svg>
           </button>
           
-          {/* Database/Server Icon */}
+          {/* Database Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <ellipse cx="12" cy="5" rx="9" ry="3"/>
@@ -52,14 +55,14 @@ export default function HomePage() {
             </svg>
           </button>
           
-          {/* Document Stack Icon */}
+          {/* Document Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </button>
           
-          {/* Grid/Layout Icon */}
+          {/* Grid Icon */}
           <button className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -70,7 +73,7 @@ export default function HomePage() {
             </svg>
           </button>
           
-          {/* User Avatar - Blue circle with X */}
+          {/* User Avatar */}
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold text-white">
             X
           </div>
@@ -78,29 +81,29 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center px-8" style={{minHeight: 'calc(100vh - 120px)'}}>
+      <main className="flex flex-col items-center justify-center px-8 pt-16">
         <div className="w-full max-w-4xl text-center">
-          {/* Main Title Section */}
-          <div className="mb-16">
-            <h1 className="text-8xl font-bold tracking-tight leading-none mb-6 text-white">
+          {/* Title Section */}
+          <div className="mb-12">
+            <h1 className="text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-5 text-white">
               Make anything
             </h1>
-            <p className="text-2xl text-gray-400 font-normal">
+            <p className="text-xl text-gray-400 font-normal leading-relaxed">
               Build fullstack web apps by prompting
             </p>
           </div>
 
-          {/* Input Form Section */}
-          <div className="w-full max-w-3xl mx-auto">
+          {/* Input Form */}
+          <div className="w-full max-w-2xl mx-auto">
             <form onSubmit={handleSubmit}>
-              <div className="relative bg-gray-800 bg-opacity-80 backdrop-blur-sm rounded-3xl border border-gray-700 p-2 shadow-2xl">
-                <div className="flex items-center">
-                  {/* Attachment Icon */}
+              <div className="relative bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-2xl border border-gray-700 p-1.5 shadow-2xl">
+                <div className="flex items-center gap-1">
+                  {/* Attachment Button */}
                   <button
                     type="button"
-                    className="flex items-center justify-center w-14 h-14 text-gray-400 hover:text-white transition-colors rounded-2xl hover:bg-gray-700"
+                    className="flex items-center justify-center w-11 h-11 text-gray-400 hover:text-white transition-colors rounded-xl hover:bg-gray-700"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"/>
                     </svg>
                   </button>
@@ -111,23 +114,23 @@ export default function HomePage() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="make a collaborative whiteboard app wit..."
-                    className="flex-1 bg-transparent text-white placeholder-gray-500 text-lg py-4 px-4 border-none outline-none font-normal"
+                    className="flex-1 bg-transparent text-white placeholder-gray-500 text-base py-3 px-3 border-none outline-none font-normal"
                   />
                   
                   {/* Right Section */}
-                  <div className="flex items-center gap-4 pr-3">
+                  <div className="flex items-center gap-3 pr-1.5">
                     {/* Model Badge */}
-                    <div className="flex items-center gap-2 bg-gray-700 rounded-xl px-4 py-2 text-sm">
+                    <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-1.5 text-sm">
                       <span className="text-gray-200 font-medium">Agentic</span>
-                      <span className="bg-gray-600 px-2 py-1 rounded-md text-xs text-gray-300 font-medium">max</span>
+                      <span className="bg-gray-600 px-1.5 py-0.5 rounded text-xs text-gray-300 font-medium">max</span>
                     </div>
                     
                     {/* Send Button */}
                     <button
                       type="submit"
-                      className="flex items-center justify-center w-12 h-12 bg-white text-black rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
+                      className="flex items-center justify-center w-10 h-10 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
                       </svg>
                     </button>
