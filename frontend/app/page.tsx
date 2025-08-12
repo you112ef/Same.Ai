@@ -16,37 +16,42 @@ export default function HomePage() {
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: 'white', 
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
+      fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      margin: 0,
+      padding: 0
     }}>
       {/* Header */}
       <header style={{ 
         width: '100%', 
-        padding: '0 32px', 
-        height: '72px',
+        padding: '0 24px', 
+        height: '64px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        borderBottom: 'none'
       }}>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Same.new logo - exact replica */}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="1" y="1" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="11" y="1" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="21" y="1" width="2" height="8" rx="1" fill="currentColor"/>
-              <rect x="1" y="11" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="11" y="11" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="21" y="11" width="2" height="8" rx="1" fill="currentColor"/>
-              <rect x="1" y="21" width="8" height="2" rx="1" fill="currentColor"/>
-              <rect x="11" y="21" width="8" height="2" rx="1" fill="currentColor"/>
-              <rect x="21" y="21" width="2" height="2" rx="1" fill="currentColor"/>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Exact same.new logo */}
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" style={{ color: 'black' }}>
+              <g>
+                <rect x="0.5" y="0.5" width="7" height="7" rx="1.5" />
+                <rect x="9.5" y="0.5" width="7" height="7" rx="1.5" />
+                <rect x="18.5" y="0.5" width="1" height="7" rx="0.5" />
+                <rect x="0.5" y="9.5" width="7" height="7" rx="1.5" />
+                <rect x="9.5" y="9.5" width="7" height="7" rx="1.5" />
+                <rect x="18.5" y="9.5" width="1" height="7" rx="0.5" />
+                <rect x="0.5" y="18.5" width="7" height="1" rx="0.5" />
+                <rect x="9.5" y="18.5" width="7" height="1" rx="0.5" />
+                <rect x="18.5" y="18.5" width="1" height="1" rx="0.5" />
+              </g>
             </svg>
             <span style={{ 
-              fontSize: '20px', 
+              fontSize: '18px', 
               fontWeight: '600', 
-              color: 'black',
-              letterSpacing: '-0.02em'
+              color: '#000000',
+              letterSpacing: '-0.025em'
             }}>
               same
             </span>
@@ -54,15 +59,15 @@ export default function HomePage() {
           <button style={{ 
             background: 'none', 
             border: 'none', 
-            padding: '6px', 
+            padding: '4px', 
             cursor: 'pointer',
-            borderRadius: '6px',
+            borderRadius: '4px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#6b7280'
+            color: '#9ca3af'
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
               <path d="m4 16 4-4 4 4"/>
               <path d="m16 4 4 4-4 4"/>
@@ -71,20 +76,20 @@ export default function HomePage() {
         </div>
 
         {/* Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <button style={{ 
             background: 'none', 
             border: 'none', 
             color: '#6b7280', 
-            fontSize: '15px',
-            fontWeight: '500',
+            fontSize: '14px',
+            fontWeight: '400',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             padding: 0
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="m9 18 6-6-6-6"/>
             </svg>
             Careers
@@ -93,8 +98,8 @@ export default function HomePage() {
             background: 'none', 
             border: 'none', 
             color: '#6b7280', 
-            fontSize: '15px',
-            fontWeight: '500',
+            fontSize: '14px',
+            fontWeight: '400',
             cursor: 'pointer',
             padding: 0
           }}>
@@ -104,20 +109,20 @@ export default function HomePage() {
             background: 'none', 
             border: 'none', 
             color: '#6b7280', 
-            fontSize: '15px',
-            fontWeight: '500',
+            fontSize: '14px',
+            fontWeight: '400',
             cursor: 'pointer',
             padding: 0
           }}>
             Log in
           </button>
           <button style={{
-            backgroundColor: 'black',
+            backgroundColor: '#000000',
             color: 'white',
-            padding: '10px 20px',
-            borderRadius: '24px',
+            padding: '8px 16px',
+            borderRadius: '20px',
             border: 'none',
-            fontSize: '15px',
+            fontSize: '14px',
             fontWeight: '500',
             cursor: 'pointer'
           }}>
@@ -132,28 +137,28 @@ export default function HomePage() {
         flexDirection: 'column', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        padding: '120px 32px 80px',
+        padding: '140px 24px 80px',
         textAlign: 'center'
       }}>
         {/* Hero Title */}
-        <div style={{ marginBottom: '80px', maxWidth: '1000px' }}>
+        <div style={{ marginBottom: '64px', maxWidth: '900px' }}>
           <h1 style={{ 
-            fontSize: '96px', 
-            fontWeight: 'bold', 
-            color: 'black', 
-            marginBottom: '32px',
-            lineHeight: '0.9',
-            margin: '0 0 32px 0',
-            letterSpacing: '-0.02em'
+            fontSize: '80px', 
+            fontWeight: '700', 
+            color: '#000000', 
+            marginBottom: '24px',
+            lineHeight: '1',
+            margin: '0 0 24px 0',
+            letterSpacing: '-0.025em'
           }}>
             Make anything
           </h1>
           <p style={{ 
-            fontSize: '24px', 
+            fontSize: '20px', 
             color: '#6b7280', 
-            maxWidth: '600px', 
+            maxWidth: '500px', 
             margin: '0 auto',
-            lineHeight: '1.5',
+            lineHeight: '1.4',
             fontWeight: '400'
           }}>
             Build fullstack web apps by prompting
@@ -161,35 +166,35 @@ export default function HomePage() {
         </div>
 
         {/* Prompt Input */}
-        <div style={{ width: '100%', maxWidth: '720px', marginBottom: '24px' }}>
+        <div style={{ width: '100%', maxWidth: '672px', marginBottom: '32px' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ 
               position: 'relative', 
-              backgroundColor: '#f8f9fa', 
-              borderRadius: '24px', 
-              border: '1px solid #e9ecef',
-              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+              backgroundColor: '#f5f5f5', 
+              borderRadius: '16px', 
+              border: 'none',
               overflow: 'hidden'
             }}>
               {/* Input Field */}
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'flex-start', 
-                padding: '20px 24px', 
-                paddingBottom: '72px'
+                padding: '20px', 
+                paddingBottom: '60px'
               }}>
                 <button type="button" style={{ 
                   background: 'none', 
                   border: 'none', 
-                  padding: '8px', 
+                  padding: '0', 
                   marginRight: '12px', 
+                  marginTop: '2px',
                   color: '#9ca3af',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.42 16.4a2 2 0 0 1-2.83-2.83l7.07-7.07"/>
                   </svg>
                 </button>
@@ -202,12 +207,12 @@ export default function HomePage() {
                     flex: 1,
                     border: 'none',
                     background: 'transparent',
-                    fontSize: '18px',
+                    fontSize: '16px',
                     outline: 'none',
-                    color: 'black',
+                    color: '#000000',
                     resize: 'none',
                     fontFamily: 'inherit',
-                    lineHeight: '1.4',
+                    lineHeight: '1.5',
                     overflow: 'hidden'
                   }}
                   onInput={(e) => {
@@ -216,6 +221,20 @@ export default function HomePage() {
                     target.style.height = target.scrollHeight + 'px';
                   }}
                 />
+                
+                {/* Tab indicator */}
+                <div style={{
+                  backgroundColor: '#e5e7eb',
+                  color: '#6b7280',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  fontSize: '11px',
+                  fontWeight: '500',
+                  marginLeft: '12px',
+                  marginTop: '2px'
+                }}>
+                  tab
+                </div>
               </div>
 
               {/* Bottom Bar */}
@@ -227,14 +246,13 @@ export default function HomePage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'space-between', 
-                padding: '16px 24px', 
-                backgroundColor: '#f8f9fa',
-                borderTop: '1px solid #e9ecef'
+                padding: '14px 20px', 
+                backgroundColor: '#f5f5f5'
               }}>
                 {/* Model Selector */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ 
-                    fontSize: '14px', 
+                    fontSize: '13px', 
                     fontWeight: '500', 
                     color: '#374151' 
                   }}>
@@ -243,13 +261,13 @@ export default function HomePage() {
                   <button type="button" style={{ 
                     background: 'none', 
                     border: 'none', 
-                    padding: '4px',
+                    padding: '2px',
                     cursor: 'pointer',
                     color: '#6b7280',
                     display: 'flex',
                     alignItems: 'center'
                   }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="m6 9 6 6 6-6"/>
                     </svg>
                   </button>
@@ -259,12 +277,12 @@ export default function HomePage() {
                 <button 
                   type="submit"
                   style={{
-                    backgroundColor: 'black',
+                    backgroundColor: '#000000',
                     color: 'white',
                     borderRadius: '50%',
                     border: 'none',
-                    width: '40px',
-                    height: '40px',
+                    width: '32px',
+                    height: '32px',
                     cursor: prompt.trim() ? 'pointer' : 'not-allowed',
                     opacity: prompt.trim() ? 1 : 0.5,
                     display: 'flex',
@@ -273,25 +291,10 @@ export default function HomePage() {
                   }}
                   disabled={!prompt.trim()}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="m5 12 14-7-7 14-2-7z"/>
                   </svg>
                 </button>
-              </div>
-              
-              {/* Tab indicator */}
-              <div style={{
-                position: 'absolute',
-                top: '20px',
-                right: '24px',
-                backgroundColor: '#e5e7eb',
-                color: '#6b7280',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: '500'
-              }}>
-                tab
               </div>
             </div>
           </form>
