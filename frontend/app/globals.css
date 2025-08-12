@@ -139,8 +139,27 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .container-padding {
     @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Same.new specific styles */
+  .same-input {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .same-input::placeholder {
+    color: #9CA3AF;
+  }
+
+  .same-gray-50 {
+    background-color: #F9FAFB;
+  }
+
+  .same-border {
+    border-color: #E5E7EB;
   }
 }
