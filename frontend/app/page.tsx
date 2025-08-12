@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Paperclip, ArrowUp, ChevronDown, Copy, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { SameLogo } from '@/components/ui/same-logo'
 
 export default function HomePage() {
   const [prompt, setPrompt] = useState('')
@@ -25,13 +26,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
-              <div className="flex items-center space-x-1 rtl:space-x-reverse">
-                <div className="w-6 h-6">
-                  <svg viewBox="0 0 24 24" className="w-full h-full">
-                    <path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6zM3 19h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6z" fill="currentColor"/>
-                  </svg>
-                </div>
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
+                <SameLogo className="w-6 h-6" />
                 <span className="text-xl font-semibold text-gray-900">same</span>
               </div>
               <Button variant="ghost" size="sm" className="p-1">
