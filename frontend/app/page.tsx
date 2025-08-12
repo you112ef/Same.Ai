@@ -1,18 +1,126 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+
+interface AppExample {
+  id: string
+  title: string
+  description: string
+  prompt: string
+  icon: string
+  category: string
+  features: string[]
+}
+
+const appExamples: AppExample[] = [
+  {
+    id: 'booking',
+    title: 'نظام حجز المواعيد',
+    description: 'منصة لحجز المواعيد مع تكامل التقويم',
+    prompt: 'create a booking system for appointments with calendar integration, user authentication, and email notifications',
+    icon: '📅',
+    category: 'business',
+    features: ['تقويم تفاعلي', 'إدارة المواعيد', 'إشعارات', 'مصادقة المستخدمين']
+  },
+  {
+    id: 'ecommerce',
+    title: 'متجر إلكتروني',
+    description: 'متجر كامل مع سلة تسوق ومدفوعات',
+    prompt: 'create an e-commerce store with shopping cart, product catalog, payment integration, and user accounts',
+    icon: '🛒',
+    category: 'ecommerce',
+    features: ['كتالوج المنتجات', 'سلة التسوق', 'المدفوعات', 'إدارة المخزون']
+  },
+  {
+    id: 'dashboard',
+    title: 'لوحة تحكم تحليلية',
+    description: 'لوحة تحكم مع مخططات وإحصائيات',
+    prompt: 'create an analytics dashboard with charts, data visualization, user management, and real-time updates',
+    icon: '📊',
+    category: 'analytics',
+    features: ['مخططات تفاعلية', 'تحليلات فورية', 'تصدير البيانات', 'تقارير']
+  },
+  {
+    id: 'blog',
+    title: 'منصة تدوين',
+    description: 'منصة تدوين مع محرر ومشاركة',
+    prompt: 'create a blogging platform with rich text editor, comment system, user profiles, and social sharing',
+    icon: '✍️',
+    category: 'content',
+    features: ['محرر نصوص', 'نظام تعليقات', 'مشاركة اجتماعية', 'إدارة المحتوى']
+  },
+  {
+    id: 'chat',
+    title: 'تطبيق دردشة',
+    description: 'تطبيق دردشة فورية مع غرف',
+    prompt: 'create a real-time chat application with rooms, file sharing, emoji support, and user presence',
+    icon: '💬',
+    category: 'communication',
+    features: ['دردشة فورية', 'غرف الدردشة', 'مشاركة الملفات', 'رموز تعبيرية']
+  },
+  {
+    id: 'todo',
+    title: 'إدارة المهام',
+    description: 'تطبيق لإدارة المهام والمشاريع',
+    prompt: 'create a task management app with projects, deadlines, team collaboration, and progress tracking',
+    icon: '✅',
+    category: 'productivity',
+    features: ['إدارة المشاريع', 'تتبع التقدم', 'تعاون الفريق', 'تذكيرات']
+  }
+]
+
+const modelOptions = [
+  { id: 'claude-4-sonnet', name: 'Claude 4 Sonnet', description: 'متوازن وسريع', icon: '🤖' },
+  { id: 'gpt-4', name: 'GPT-4', description: 'قوي ومتطور', icon: '⚡' },
+  { id: 'gemini-pro', name: 'Gemini Pro', description: 'متعدد الوسائط', icon: '✨' },
+  { id: 'llama-3', name: 'Llama 3', description: 'مفتوح المصدر', icon: '🦙' }
+]
 
 export default function HomePage() {
   const [prompt, setPrompt] = useState('create a booking system for appointments with calendar integration')
+  const [selectedModel, setSelectedModel] = useState('claude-4-sonnet')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedApp, setGeneratedApp] = useState<any>(null)
+  const [showExamples, setShowExamples] = useState(true)
+  const [generationProgress, setGenerationProgress] = useState(0)
+  const [currentStep, setCurrentStep] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
+    }
+  }, [prompt])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!prompt.trim() || isGenerating) return
 
     setIsGenerating(true)
-    
+    setShowExamples(false)
+    setGenerationProgress(0)
+    setCurrentStep('بدء إنشاء التطبيق...')
+
+    // Simulate progress steps
+    const steps = [
+      'تحليل الطلب...',
+      'اختيار التقنيات المناسبة...',
+      'إنشاء هيكل المشروع...',
+      'توليد المكونات...',
+      'إعداد قاعدة البيانات...',
+      'تطبيق التصميم...',
+      'إضافة الوظائف...',
+      'اختبار التطبيق...',
+      'تجهيز المعاينة...'
+    ]
+
+    for (let i = 0; i < steps.length; i++) {
+      setCurrentStep(steps[i])
+      setGenerationProgress((i + 1) / steps.length * 100)
+      await new Promise(resolve => setTimeout(resolve, 800))
+    }
+
     try {
       const response = await fetch('/api/generator/generate', {
         method: 'POST',
@@ -21,24 +129,38 @@ export default function HomePage() {
         },
         body: JSON.stringify({
           prompt: prompt.trim(),
-          model: 'claude-4-sonnet'
+          model: selectedModel
         })
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
         setGeneratedApp(data.app)
+        setCurrentStep('تم إنشاء التطبيق بنجاح!')
         // Redirect to the generated app
-        window.location.href = `/app/${data.app.id}`
+        setTimeout(() => {
+          window.location.href = `/app/${data.app.id}`
+        }, 1500)
       } else {
         console.error('Generation failed:', data.message)
+        setCurrentStep('فشل في إنشاء التطبيق')
       }
     } catch (error) {
       console.error('Error generating app:', error)
+      setCurrentStep('حدث خطأ أثناء إنشاء التطبيق')
     } finally {
-      setIsGenerating(false)
+      setTimeout(() => {
+        setIsGenerating(false)
+        setGenerationProgress(0)
+        setShowExamples(true)
+      }, 3000)
     }
+  }
+
+  const selectExample = (example: AppExample) => {
+    setPrompt(example.prompt)
+    setShowExamples(false)
   }
 
   return (
