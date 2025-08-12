@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { User, AuthResponse, LoginRequest, RegisterRequest } from '@/shared/types'
+import { User, AuthResponse, LoginRequest, RegisterRequest } from '../../../shared/types'
 import { authApi } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/hooks/use-toast'

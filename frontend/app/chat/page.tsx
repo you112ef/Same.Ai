@@ -19,7 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import Link from 'next/link'
-import { Conversation, AIModel, MODEL_CONFIGS } from '@/shared/types'
+import { Conversation, AIModel, MODEL_CONFIGS } from '../../../shared/types'
 
 // Mock data for conversations
 const mockConversations: Conversation[] = [

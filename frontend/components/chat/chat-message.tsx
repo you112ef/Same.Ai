@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Message, MessageRole, MODEL_CONFIGS } from '@/shared/types'
+import { Message, MessageRole, MODEL_CONFIGS } from '../../../../shared/types'
 import { Button } from '@/components/ui/button'
 import { 
   Copy, 

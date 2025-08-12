@@ -15,7 +15,7 @@ import {
   Download
 } from 'lucide-react'
 import Link from 'next/link'
-import { Conversation, Message, MessageRole, AIModel, MODEL_CONFIGS } from '@/shared/types'
+import { Conversation, Message, MessageRole, AIModel, MODEL_CONFIGS } from '../../../../../shared/types'
 
 // Mock conversation data
 const mockConversations: Record<string, Conversation> = {

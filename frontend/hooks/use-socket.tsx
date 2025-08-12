@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
-import { SocketEvents, Message, AIResponse } from '@/shared/types'
+import { SocketEvents, Message, AIResponse } from '../../../shared/types'
 import { getToken } from './use-auth'
 import { toast } from './use-toast'
 

@@ -18,7 +18,7 @@ import {
   ThumbsDown,
   RefreshCw
 } from 'lucide-react'
-import { Message, AIModel, MessageRole } from '@/shared/types'
+import { Message, AIModel, MessageRole } from '../../../../shared/types'
 import { ChatMessage } from './chat-message'
 import { ModelSelector } from './model-selector'
 import { FileUpload } from './file-upload'

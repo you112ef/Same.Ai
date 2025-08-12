@@ -47,28 +47,42 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     try {
       const decoded = jwt.verify(token, jwtSecret) as JWTPayload
       
-      // Fetch user from database
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          avatar: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      })
-
-      if (!user) {
-        return res.status(401).json({ 
-          error: 'User not found',
-          code: 'USER_NOT_FOUND'
+      // Fetch user from database (if available)
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            avatar: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true
+          }
         })
-      }
 
-      req.user = user as User
+        if (!user) {
+          return res.status(401).json({
+            error: 'User not found',
+            code: 'USER_NOT_FOUND'
+          })
+        }
+
+        req.user = user as User
+      } catch (dbError) {
+        // Database not available, use token data as fallback
+        console.warn('Database not available, using token data for auth')
+        req.user = {
+          id: decoded.userId,
+          email: decoded.email,
+          name: decoded.email, // fallback to email
+          avatar: null,
+          role: decoded.role,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        } as User
+      }
       next()
     } catch (jwtError: any) {
       if (jwtError.name === 'TokenExpiredError') {

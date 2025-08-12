@@ -10,34 +10,53 @@ interface AIResponseChunk {
 }
 
 export class AIService {
-  private openai: OpenAI
-  private anthropic: Anthropic
-  private googleAI: GoogleGenerativeAI
+  private openai?: OpenAI
+  private anthropic?: Anthropic
+  private googleAI?: GoogleGenerativeAI
 
   constructor() {
-    // Initialize AI clients
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    })
+    // Initialize AI clients only if API keys are available
+    try {
+      if (process.env.OPENAI_API_KEY) {
+        this.openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY
+        })
+      }
 
-    this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || ''
-    })
+      if (process.env.ANTHROPIC_API_KEY) {
+        this.anthropic = new Anthropic({
+          apiKey: process.env.ANTHROPIC_API_KEY
+        })
+      }
 
-    this.googleAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '')
+      if (process.env.GOOGLE_AI_API_KEY) {
+        this.googleAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+      }
+    } catch (error) {
+      console.warn('Failed to initialize some AI services:', error)
+    }
   }
 
   async *generateResponse(messages: Message[], model: AIModel): AsyncGenerator<AIResponseChunk> {
     const config = MODEL_CONFIGS[model]
-    
+
     switch (config.provider) {
       case 'openai':
+        if (!this.openai) {
+          throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.')
+        }
         yield* this.generateOpenAIResponse(messages, model)
         break
       case 'anthropic':
+        if (!this.anthropic) {
+          throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.')
+        }
         yield* this.generateAnthropicResponse(messages, model)
         break
       case 'google':
+        if (!this.googleAI) {
+          throw new Error('Google AI API key not configured. Please set GOOGLE_AI_API_KEY environment variable.')
+        }
         yield* this.generateGoogleResponse(messages, model)
         break
       case 'meta':
@@ -53,7 +72,7 @@ export class AIService {
       const config = MODEL_CONFIGS[model]
       const formattedMessages = this.formatMessagesForOpenAI(messages)
 
-      const stream = await this.openai.chat.completions.create({
+      const stream = await this.openai!.chat.completions.create({
         model: config.name,
         messages: formattedMessages,
         max_tokens: Math.min(config.maxTokens, 2000), // Limit response length
@@ -105,7 +124,7 @@ export class AIService {
     } catch (error) {
       console.error('Anthropic API error:', error)
       yield {
-        content: 'عذراً، حدث خطأ في الاتصال بخدمة Claude. يرجى المحاولة مرة أخرى.',
+        content: 'عذراً، حدث خطأ في الاتصال بخدمة Claude. ير��ى المحاولة مرة أخرى.',
         finishReason: 'stop'
       }
     }
@@ -313,7 +332,7 @@ ${code}
 
     return {
       suggestions: ['تم مراجعة الكود بنجاح'],
-      issues: ['لم يتم العثور على مشاكل واضحة'],
+      issues: ['لم يتم العثو�� على مشاكل واضحة'],
       rating: 7
     }
   }
