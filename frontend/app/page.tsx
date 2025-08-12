@@ -14,6 +14,17 @@ interface AppExample {
   features: string[]
 }
 
+interface ModelOption {
+  id: string
+  name: string
+  description: string
+  icon: string
+  speed: number
+  quality: number
+  cost: 'low' | 'medium' | 'high'
+  features: string[]
+}
+
 const appExamples: AppExample[] = [
   {
     id: 'booking',
@@ -110,7 +121,7 @@ const modelOptions = [
     speed: 3,
     quality: 4,
     cost: 'low' as const,
-    features: ['مفتوح المصدر', 'خصوصية', 'شفا��ية']
+    features: ['مفتوح المصدر', 'خصوصية', 'شفافية']
   }
 ]
 
@@ -145,7 +156,7 @@ export default function HomePage() {
     const steps = [
       'تحليل الطلب...',
       'اختيار التقنيات المناسبة...',
-      'إنشاء هيكل المشرو��...',
+      'إنشاء هيكل المشروع...',
       'توليد المكونات...',
       'إعداد قاعدة البيانات...',
       'تطبيق التصميم...',
@@ -399,7 +410,7 @@ export default function HomePage() {
                     اختر النموذج المناسب لمشروعك
                   </h2>
                   <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-                    كل نموذج له نقاط قوة مختلفة. اختر ��لأنسب حسب نوع التطبيق والميزانية المتاحة
+                    كل نموذج له نقاط قوة مختلفة. اختر الأنسب حسب نوع التطبيق والميزانية المتاحة
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -491,7 +502,7 @@ export default function HomePage() {
                   <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                       <div className="text-2xl mb-2">🚀</div>
-                      <h4 className="font-semibold text-blue-900 mb-1">للمشاريع السريعة</h4>
+                      <h4 className="font-semibold text-blue-900 mb-1">للمشاريع السر��عة</h4>
                       <p className="text-sm text-blue-700">Claude 3 Haiku أو Gemini Pro</p>
                     </div>
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
