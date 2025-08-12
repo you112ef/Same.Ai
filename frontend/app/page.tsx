@@ -4,11 +4,40 @@ import { useState } from 'react'
 
 export default function HomePage() {
   const [prompt, setPrompt] = useState('create a booking system for appointments with calendar integration')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generatedApp, setGeneratedApp] = useState<any>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (prompt.trim()) {
-      window.location.href = `/chat/new?prompt=${encodeURIComponent(prompt)}`
+    if (!prompt.trim() || isGenerating) return
+
+    setIsGenerating(true)
+    
+    try {
+      const response = await fetch('/api/generator/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          model: 'claude-4-sonnet'
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setGeneratedApp(data.app)
+        // Redirect to the generated app
+        window.location.href = `/app/${data.app.id}`
+      } else {
+        console.error('Generation failed:', data.message)
+      }
+    } catch (error) {
+      console.error('Error generating app:', error)
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -16,7 +45,7 @@ export default function HomePage() {
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: 'white', 
-      fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
       margin: 0,
       padding: 0
     }}>
@@ -33,7 +62,6 @@ export default function HomePage() {
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {/* Exact same.new logo */}
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" style={{ color: 'black' }}>
               <g>
                 <rect x="0.5" y="0.5" width="7" height="7" rx="1.5" />
@@ -203,6 +231,7 @@ export default function HomePage() {
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="create a booking system for appointments with calendar integration"
                   rows={1}
+                  disabled={isGenerating}
                   style={{
                     flex: 1,
                     border: 'none',
@@ -283,23 +312,80 @@ export default function HomePage() {
                     border: 'none',
                     width: '32px',
                     height: '32px',
-                    cursor: prompt.trim() ? 'pointer' : 'not-allowed',
-                    opacity: prompt.trim() ? 1 : 0.5,
+                    cursor: (prompt.trim() && !isGenerating) ? 'pointer' : 'not-allowed',
+                    opacity: (prompt.trim() && !isGenerating) ? 1 : 0.5,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
-                  disabled={!prompt.trim()}
+                  disabled={!prompt.trim() || isGenerating}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m5 12 14-7-7 14-2-7z"/>
-                  </svg>
+                  {isGenerating ? (
+                    <div style={{
+                      width: '14px',
+                      height: '14px',
+                      border: '2px solid #ffffff',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="m5 12 14-7-7 14-2-7z"/>
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
           </form>
         </div>
+
+        {/* Generation Status */}
+        {isGenerating && (
+          <div style={{
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #e9ecef',
+            borderRadius: '12px',
+            padding: '16px 24px',
+            textAlign: 'center',
+            maxWidth: '400px'
+          }}>
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                border: '3px solid #e9ecef',
+                borderTop: '3px solid #000000',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto'
+              }} />
+            </div>
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#6b7280', 
+              margin: '0',
+              fontWeight: '500'
+            }}>
+              Generating your app...
+            </p>
+            <p style={{ 
+              fontSize: '12px', 
+              color: '#9ca3af', 
+              margin: '4px 0 0 0'
+            }}>
+              This may take a few moments
+            </p>
+          </div>
+        )}
       </main>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }
