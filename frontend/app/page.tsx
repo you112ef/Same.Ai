@@ -87,6 +87,7 @@ export default function HomePage() {
   const [generationProgress, setGenerationProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { addNotification, NotificationContainer } = useNotifications()
 
   useEffect(() => {
     if (textareaRef.current) {
