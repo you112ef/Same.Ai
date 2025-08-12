@@ -141,6 +141,12 @@ export default function HomePage() {
       if (data.success) {
         setGeneratedApp(data.app)
         setCurrentStep('تم إنشاء التطبيق بنجاح!')
+        addNotification({
+          type: 'success',
+          title: 'تم إنشاء التطبيق!',
+          message: 'سيتم توجيهك للمعاينة خلال ثوانٍ قليلة',
+          duration: 3000
+        })
         // Redirect to the generated app
         setTimeout(() => {
           window.location.href = `/app/${data.app.id}`
@@ -148,10 +154,22 @@ export default function HomePage() {
       } else {
         console.error('Generation failed:', data.message)
         setCurrentStep('فشل في إنشاء التطبيق')
+        addNotification({
+          type: 'error',
+          title: 'فشل في الإنشاء',
+          message: data.message || 'حدث خطأ أثناء إنشاء التطبيق',
+          duration: 5000
+        })
       }
     } catch (error) {
       console.error('Error generating app:', error)
       setCurrentStep('حدث خطأ أثناء إنشاء التطبيق')
+      addNotification({
+        type: 'error',
+        title: 'خطأ في الاتصال',
+        message: 'تعذر الاتصال بالخادم، ��رجى المحاولة مرة أخرى',
+        duration: 5000
+      })
     } finally {
       setTimeout(() => {
         setIsGenerating(false)
