@@ -17,6 +17,7 @@ import messageRoutes from './routes/messages'
 import fileRoutes from './routes/files'
 import aiRoutes from './routes/ai'
 import userRoutes from './routes/users'
+import generatorRoutes from './routes/generator'
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler'
@@ -94,6 +95,7 @@ app.use('/api/messages', authenticate, messageRoutes)
 app.use('/api/files', authenticate, fileRoutes)
 app.use('/api/ai', authenticate, aiRoutes)
 app.use('/api/users', authenticate, userRoutes)
+app.use('/api/generator', generatorRoutes)
 
 // Setup Socket.IO handlers
 setupSocketHandlers(io)
