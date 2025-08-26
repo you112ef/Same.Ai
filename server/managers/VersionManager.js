@@ -1,238 +1,260 @@
 const fs = require('fs-extra');
 const path = require('path');
 const archiver = require('archiver');
+const { v4: uuidv4 } = require('uuid');
 
 class VersionManager {
   constructor(sessionId) {
     this.sessionId = sessionId;
-    this.projectPath = path.join(process.cwd(), 'projects', sessionId);
-    this.versionsPath = path.join(process.cwd(), 'versions', sessionId);
-    this.systemPath = path.join(this.projectPath, '.same');
+    this.projectDir = path.join(process.cwd(), 'projects', sessionId);
+    this.versionsDir = path.join(this.projectDir, '.versions');
+    this.versionsFile = path.join(this.versionsDir, 'versions.json');
   }
-  
-  async createSnapshot(description = '') {
+
+  /**
+   * Initialize version control system
+   */
+  async initialize() {
     try {
+      await fs.ensureDir(this.versionsDir);
+      
+      // Create versions file if it doesn't exist
+      if (!await fs.pathExists(this.versionsFile)) {
+        const initialVersions = {
+          versions: [],
+          currentVersion: null,
+          lastSnapshot: null
+        };
+        await fs.writeFile(this.versionsFile, JSON.stringify(initialVersions, null, 2));
+      }
+      
+      console.log(`Version control initialized for session: ${this.sessionId}`);
+      return true;
+    } catch (error) {
+      console.error('Error initializing version control:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new version snapshot
+   */
+  async createSnapshot(description = '', metadata = {}) {
+    try {
+      await this.initialize();
+      
+      const versionId = uuidv4();
       const timestamp = new Date().toISOString();
-      const versionId = `v${Date.now()}`;
-      const versionPath = path.join(this.versionsPath, versionId);
+      const versionDir = path.join(this.versionsDir, versionId);
       
-      await fs.ensureDir(versionPath);
+      // Create version directory
+      await fs.ensureDir(versionDir);
       
-      // نسخ المشروع
-      await fs.copy(this.projectPath, path.join(versionPath, 'project'));
+      // Copy project files to version directory
+      await this.copyProjectFiles(versionDir);
       
-      // إنشاء أرشيف مضغوط
-      const archivePath = path.join(versionPath, 'project.zip');
-      await this.createArchive(this.projectPath, archivePath);
-      
-      // حفظ معلومات الإصدار
-      const versionInfo = {
+      // Create version metadata
+      const version = {
         id: versionId,
+        description,
         timestamp,
-        description: description || 'نسخة تلقائية',
-        projectPath: this.projectPath,
-        archivePath,
-        size: await this.getDirectorySize(this.projectPath),
-        files: await this.getProjectFileCount()
+        metadata,
+        fileCount: await this.countFiles(versionDir),
+        size: await this.calculateSize(versionDir),
+        author: metadata.author || 'AI Assistant',
+        tags: metadata.tags || []
       };
       
-      await fs.writeFile(
-        path.join(versionPath, 'version.json'),
-        JSON.stringify(versionInfo, null, 2)
-      );
+      // Update versions file
+      await this.addVersion(version);
       
-      // تحديث قائمة الإصدارات
-      await this.updateVersionsList(versionInfo);
-      
-      // تحديث سجل التاريخ
-      await this.updateHistory('snapshot', description);
-      
-      return { success: true, version: versionInfo };
+      console.log(`Version snapshot created: ${versionId}`);
+      return { success: true, version };
     } catch (error) {
       console.error('Error creating snapshot:', error);
       throw error;
     }
   }
-  
-  async createArchive(sourcePath, archivePath) {
-    return new Promise((resolve, reject) => {
-      const output = fs.createWriteStream(archivePath);
-      const archive = archiver('zip', { zlib: { level: 9 } });
-      
-      output.on('close', () => resolve());
-      archive.on('error', (err) => reject(err));
-      
-      archive.pipe(output);
-      archive.directory(sourcePath, false);
-      archive.finalize();
-    });
-  }
-  
-  async getDirectorySize(dirPath) {
-    let size = 0;
+
+  /**
+   * Copy project files to version directory
+   */
+  async copyProjectFiles(versionDir) {
     try {
-      const items = await fs.readdir(dirPath);
+      const srcDir = path.join(this.projectDir, 'src');
       
-      for (const item of items) {
-        if (item === '.same' || item === 'node_modules') continue;
-        
-        const fullPath = path.join(dirPath, item);
-        const stats = await fs.stat(fullPath);
-        
-        if (stats.isDirectory()) {
-          size += await this.getDirectorySize(fullPath);
-        } else {
-          size += stats.size;
+      if (await fs.pathExists(srcDir)) {
+        await fs.copy(srcDir, path.join(versionDir, 'src'));
+      }
+      
+      // Copy package.json if it exists
+      const packageJsonPath = path.join(this.projectDir, 'package.json');
+      if (await fs.pathExists(packageJsonPath)) {
+        await fs.copy(packageJsonPath, path.join(versionDir, 'package.json'));
+      }
+      
+      // Copy other important files
+      const importantFiles = ['README.md', 'tsconfig.json', '.env', '.gitignore'];
+      for (const file of importantFiles) {
+        const filePath = path.join(this.projectDir, file);
+        if (await fs.pathExists(filePath)) {
+          await fs.copy(filePath, path.join(versionDir, file));
         }
       }
     } catch (error) {
-      console.error('Error calculating directory size:', error);
+      console.error('Error copying project files:', error);
+      throw error;
     }
-    
-    return size;
   }
-  
-  async getProjectFileCount() {
-    let count = 0;
+
+  /**
+   * Add version to versions file
+   */
+  async addVersion(version) {
     try {
-      const countFiles = async (dirPath) => {
-        const items = await fs.readdir(dirPath);
-        
-        for (const item of items) {
-          if (item === '.same' || item === 'node_modules') continue;
-          
-          const fullPath = path.join(dirPath, item);
-          const stats = await fs.stat(fullPath);
-          
-          if (stats.isDirectory()) {
-            count += await countFiles(fullPath);
-          } else {
-            count++;
-          }
-        }
-      };
+      const versionsData = await this.readVersionsFile();
+      versionsData.versions.push(version);
+      versionsData.lastSnapshot = version.timestamp;
       
-      await countFiles(this.projectPath);
+      await fs.writeFile(this.versionsFile, JSON.stringify(versionsData, null, 2));
     } catch (error) {
-      console.error('Error counting files:', error);
+      console.error('Error adding version:', error);
+      throw error;
     }
-    
-    return count;
   }
-  
-  async updateVersionsList(versionInfo) {
-    const versionsListPath = path.join(this.systemPath, 'versions.json');
-    
-    let versions = [];
+
+  /**
+   * Read versions file
+   */
+  async readVersionsFile() {
     try {
-      versions = JSON.parse(await fs.readFile(versionsListPath, 'utf8'));
+      const content = await fs.readFile(this.versionsFile, 'utf8');
+      return JSON.parse(content);
     } catch (error) {
-      versions = [];
+      console.error('Error reading versions file:', error);
+      return { versions: [], currentVersion: null, lastSnapshot: null };
     }
-  
-    versions.unshift(versionInfo);
-    
-    // الاحتفاظ بآخر 10 إصدارات فقط
-    if (versions.length > 10) {
-      versions = versions.slice(0, 10);
-    }
-    
-    await fs.writeFile(versionsListPath, JSON.stringify(versions, null, 2));
   }
-  
+
+  /**
+   * List all versions
+   */
+  async listVersions() {
+    try {
+      await this.initialize();
+      const versionsData = await this.readVersionsFile();
+      return { success: true, versions: versionsData.versions };
+    } catch (error) {
+      console.error('Error listing versions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get specific version
+   */
+  async getVersion(versionId) {
+    try {
+      const versionsData = await this.readVersionsFile();
+      const version = versionsData.versions.find(v => v.id === versionId);
+      
+      if (!version) {
+        throw new Error(`Version not found: ${versionId}`);
+      }
+      
+      return { success: true, version };
+    } catch (error) {
+      console.error('Error getting version:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Restore project to specific version
+   */
   async restoreVersion(versionId) {
     try {
-      const versionPath = path.join(this.versionsPath, versionId);
-      const versionInfoPath = path.join(versionPath, 'version.json');
-      
-      if (!await fs.pathExists(versionInfoPath)) {
-        throw new Error(`الإصدار غير موجود: ${versionId}`);
+      const version = await this.getVersion(versionId);
+      if (!version.success) {
+        throw new Error('Version not found');
       }
       
-      const versionInfo = JSON.parse(await fs.readFile(versionInfoPath, 'utf8'));
+      const versionDir = path.join(this.versionsDir, versionId);
       
-      // إنشاء نسخة احتياطية من الحالة الحالية
-      await this.createSnapshot('نسخة احتياطية قبل الاسترجاع');
+      if (!await fs.pathExists(versionDir)) {
+        throw new Error('Version files not found');
+      }
       
-      // استرجاع الإصدار
-      const projectBackup = path.join(this.projectPath, 'backup');
-      await fs.move(this.projectPath, projectBackup);
-      await fs.copy(path.join(versionPath, 'project'), this.projectPath);
+      // Backup current state
+      await this.createSnapshot('Backup before restore', { 
+        type: 'backup',
+        reason: 'restore_operation'
+      });
       
-      // تحديث السجلات
-      await this.updateHistory('restore', `تم استرجاع الإصدار: ${versionId}`);
+      // Clear current src directory
+      const srcDir = path.join(this.projectDir, 'src');
+      if (await fs.pathExists(srcDir)) {
+        await fs.remove(srcDir);
+      }
       
-      return { success: true, version: versionInfo };
+      // Restore version files
+      const versionSrcDir = path.join(versionDir, 'src');
+      if (await fs.pathExists(versionSrcDir)) {
+        await fs.copy(versionSrcDir, srcDir);
+      }
+      
+      // Restore package.json
+      const versionPackageJson = path.join(versionDir, 'package.json');
+      if (await fs.pathExists(versionPackageJson)) {
+        await fs.copy(versionPackageJson, path.join(this.projectDir, 'package.json'));
+      }
+      
+      // Update current version
+      await this.setCurrentVersion(versionId);
+      
+      console.log(`Project restored to version: ${versionId}`);
+      return { success: true, version: version.version };
     } catch (error) {
       console.error('Error restoring version:', error);
       throw error;
     }
   }
-  
-  async getVersionsList() {
+
+  /**
+   * Set current version
+   */
+  async setCurrentVersion(versionId) {
     try {
-      const versionsListPath = path.join(this.systemPath, 'versions.json');
-      
-      if (!await fs.pathExists(versionsListPath)) {
-        return { success: true, versions: [] };
-      }
-      
-      const versions = JSON.parse(await fs.readFile(versionsListPath, 'utf8'));
-      return { success: true, versions };
+      const versionsData = await this.readVersionsFile();
+      versionsData.currentVersion = versionId;
+      await fs.writeFile(this.versionsFile, JSON.stringify(versionsData, null, 2));
     } catch (error) {
-      console.error('Error getting versions list:', error);
+      console.error('Error setting current version:', error);
       throw error;
     }
   }
-  
-  async deleteVersion(versionId) {
-    try {
-      const versionPath = path.join(this.versionsPath, versionId);
-      
-      if (!await fs.pathExists(versionPath)) {
-        throw new Error(`الإصدار غير موجود: ${versionId}`);
-      }
-      
-      await fs.remove(versionPath);
-      
-      // تحديث قائمة الإصدارات
-      const versionsListPath = path.join(this.systemPath, 'versions.json');
-      let versions = [];
-      
-      try {
-        versions = JSON.parse(await fs.readFile(versionsListPath, 'utf8'));
-      } catch (error) {
-        versions = [];
-      }
-      
-      versions = versions.filter(v => v.id !== versionId);
-      await fs.writeFile(versionsListPath, JSON.stringify(versions, null, 2));
-      
-      // تحديث السجلات
-      await this.updateHistory('delete', `تم حذف الإصدار: ${versionId}`);
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting version:', error);
-      throw error;
-    }
-  }
-  
+
+  /**
+   * Compare two versions
+   */
   async compareVersions(versionId1, versionId2) {
     try {
-      const version1Path = path.join(this.versionsPath, versionId1, 'project');
-      const version2Path = path.join(this.versionsPath, versionId2, 'project');
+      const version1 = await this.getVersion(versionId1);
+      const version2 = await this.getVersion(versionId2);
       
-      if (!await fs.pathExists(version1Path) || !await fs.pathExists(version2Path)) {
-        throw new Error('أحد الإصدارات غير موجود');
+      if (!version1.success || !version2.success) {
+        throw new Error('One or both versions not found');
       }
       
-      const differences = await this.compareDirectories(version1Path, version2Path);
+      const version1Dir = path.join(this.versionsDir, versionId1);
+      const version2Dir = path.join(this.versionsDir, versionId2);
+      
+      const differences = await this.findDifferences(version1Dir, version2Dir);
       
       return {
         success: true,
-        version1: versionId1,
-        version2: versionId2,
+        version1: version1.version,
+        version2: version2.version,
         differences
       };
     } catch (error) {
@@ -240,126 +262,302 @@ class VersionManager {
       throw error;
     }
   }
-  
-  async compareDirectories(dir1, dir2, relativePath = '') {
-    const differences = {
-      added: [],
-      modified: [],
-      deleted: [],
-      unchanged: []
-    };
-    
+
+  /**
+   * Find differences between two version directories
+   */
+  async findDifferences(dir1, dir2) {
     try {
-      const [items1, items2] = await Promise.all([
-        fs.readdir(dir1).catch(() => []),
-        fs.readdir(dir2).catch(() => [])
-      ]);
+      const files1 = await this.scanDirectory(dir1);
+      const files2 = await this.scanDirectory(dir2);
       
-      const allItems = new Set([...items1, ...items2]);
+      const differences = {
+        added: [],
+        removed: [],
+        modified: [],
+        unchanged: []
+      };
       
-      for (const item of allItems) {
-        if (item === '.same' || item === 'node_modules') continue;
+      // Find added and modified files
+      for (const file2 of files2) {
+        const file1 = files1.find(f => f.relativePath === file2.relativePath);
         
-        const itemPath1 = path.join(dir1, item);
-        const itemPath2 = path.join(dir2, item);
-        const relativeItemPath = path.join(relativePath, item);
-        
-        const [exists1, exists2] = await Promise.all([
-          fs.pathExists(itemPath1),
-          fs.pathExists(itemPath2)
-        ]);
-        
-        if (exists1 && !exists2) {
-          differences.deleted.push(relativeItemPath);
-        } else if (!exists1 && exists2) {
-          differences.added.push(relativeItemPath);
-        } else if (exists1 && exists2) {
-          const [stats1, stats2] = await Promise.all([
-            fs.stat(itemPath1),
-            fs.stat(itemPath2)
-          ]);
-          
-          if (stats1.isDirectory() && stats2.isDirectory()) {
-            const subDifferences = await this.compareDirectories(itemPath1, itemPath2, relativeItemPath);
-            Object.keys(differences).forEach(key => {
-              differences[key].push(...subDifferences[key]);
-            });
-          } else if (stats1.isFile() && stats2.isFile()) {
-            if (stats1.size !== stats2.size || stats1.mtime.getTime() !== stats2.mtime.getTime()) {
-              differences.modified.push(relativeItemPath);
-            } else {
-              differences.unchanged.push(relativeItemPath);
-            }
-          }
+        if (!file1) {
+          differences.added.push(file2);
+        } else if (file1.hash !== file2.hash) {
+          differences.modified.push({
+            file: file2.relativePath,
+            oldHash: file1.hash,
+            newHash: file2.hash,
+            oldSize: file1.size,
+            newSize: file2.size
+          });
+        } else {
+          differences.unchanged.push(file2);
         }
       }
-    } catch (error) {
-      console.error('Error comparing directories:', error);
-    }
-    
-    return differences;
-  }
-  
-  async updateHistory(action, description) {
-    try {
-      const historyFile = path.join(this.systemPath, 'history.md');
-      const timestamp = new Date().toLocaleString('ar-SA');
       
-      let history = '';
-      try {
-        history = await fs.readFile(historyFile, 'utf8');
-      } catch (error) {
-        history = '# سجل التغييرات\n\n';
+      // Find removed files
+      for (const file1 of files1) {
+        const file2 = files2.find(f => f.relativePath === file1.relativePath);
+        if (!file2) {
+          differences.removed.push(file1);
+        }
       }
       
-      const entry = `\n## ${action} - ${timestamp}\n- الإجراء: ${action}\n- الوصف: ${description}\n`;
-      history += entry;
-      
-      await fs.writeFile(historyFile, history, 'utf8');
+      return differences;
     } catch (error) {
-      console.error('Error updating history:', error);
+      console.error('Error finding differences:', error);
+      return { added: [], removed: [], modified: [], unchanged: [] };
     }
   }
-  
-  async cleanupOldVersions(maxVersions = 5) {
+
+  /**
+   * Scan directory recursively
+   */
+  async scanDirectory(dir, baseDir = dir) {
     try {
-      const versionsListPath = path.join(this.systemPath, 'versions.json');
+      const files = [];
+      const items = await fs.readdir(dir);
       
-      if (!await fs.pathExists(versionsListPath)) {
-        return { success: true, deleted: 0 };
+      for (const item of items) {
+        if (item === '.versions') continue; // Skip versions directory
+        
+        const fullPath = path.join(dir, item);
+        const relativePath = path.relative(baseDir, fullPath);
+        const stats = await fs.stat(fullPath);
+        
+        if (stats.isDirectory()) {
+          const subFiles = await this.scanDirectory(fullPath, baseDir);
+          files.push(...subFiles);
+        } else {
+          const content = await fs.readFile(fullPath);
+          const hash = this.simpleHash(content.toString());
+          
+          files.push({
+            relativePath,
+            size: stats.size,
+            modified: stats.mtime,
+            hash
+          });
+        }
       }
       
-      const versions = JSON.parse(await fs.readFile(versionsListPath, 'utf8'));
+      return files;
+    } catch (error) {
+      console.error('Error scanning directory:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Simple hash function
+   */
+  simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(16);
+  }
+
+  /**
+   * Export version to archive
+   */
+  async exportVersion(versionId, format = 'zip') {
+    try {
+      const version = await this.getVersion(versionId);
+      if (!version.success) {
+        throw new Error('Version not found');
+      }
+      
+      const versionDir = path.join(this.versionsDir, versionId);
+      const exportPath = path.join(this.versionsDir, `${versionId}.${format}`);
+      
+      if (format === 'zip') {
+        await this.createZipArchive(versionDir, exportPath);
+      } else {
+        throw new Error(`Export format not supported: ${format}`);
+      }
+      
+      console.log(`Version exported: ${exportPath}`);
+      return { success: true, exportPath };
+    } catch (error) {
+      console.error('Error exporting version:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create ZIP archive
+   */
+  async createZipArchive(sourceDir, outputPath) {
+    return new Promise((resolve, reject) => {
+      const output = fs.createWriteStream(outputPath);
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      
+      output.on('close', () => resolve());
+      archive.on('error', (err) => reject(err));
+      
+      archive.pipe(output);
+      archive.directory(sourceDir, false);
+      archive.finalize();
+    });
+  }
+
+  /**
+   * Delete version
+   */
+  async deleteVersion(versionId) {
+    try {
+      const versionsData = await this.readVersionsFile();
+      const versionIndex = versionsData.versions.findIndex(v => v.id === versionId);
+      
+      if (versionIndex === -1) {
+        throw new Error('Version not found');
+      }
+      
+      // Remove version from list
+      versionsData.versions.splice(versionIndex, 1);
+      
+      // Update versions file
+      await fs.writeFile(this.versionsFile, JSON.stringify(versionsData, null, 2));
+      
+      // Remove version directory
+      const versionDir = path.join(this.versionsDir, versionId);
+      if (await fs.pathExists(versionDir)) {
+        await fs.remove(versionDir);
+      }
+      
+      console.log(`Version deleted: ${versionId}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting version:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get version statistics
+   */
+  async getVersionStats() {
+    try {
+      const versionsData = await this.readVersionsFile();
+      const versions = versionsData.versions;
+      
+      const stats = {
+        totalVersions: versions.length,
+        totalSize: versions.reduce((sum, v) => sum + (v.size || 0), 0),
+        averageSize: versions.length > 0 ? 
+          versions.reduce((sum, v) => sum + (v.size || 0), 0) / versions.length : 0,
+        oldestVersion: versions.length > 0 ? 
+          versions.reduce((oldest, v) => v.timestamp < oldest.timestamp ? v : oldest) : null,
+        newestVersion: versions.length > 0 ? 
+          versions.reduce((newest, v) => v.timestamp > newest.timestamp ? v : newest) : null,
+        currentVersion: versionsData.currentVersion
+      };
+      
+      return { success: true, stats };
+    } catch (error) {
+      console.error('Error getting version stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clean up old versions
+   */
+  async cleanupOldVersions(maxVersions = 10) {
+    try {
+      const versionsData = await this.readVersionsFile();
+      const versions = versionsData.versions;
       
       if (versions.length <= maxVersions) {
-        return { success: true, deleted: 0 };
+        return { success: true, message: 'No cleanup needed' };
       }
       
-      const versionsToDelete = versions.slice(maxVersions);
-      let deletedCount = 0;
+      // Sort versions by timestamp (oldest first)
+      versions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       
-      for (const version of versionsToDelete) {
-        try {
-          const versionPath = path.join(this.versionsPath, version.id);
-          if (await fs.pathExists(versionPath)) {
-            await fs.remove(versionPath);
-            deletedCount++;
-          }
-        } catch (error) {
-          console.error(`Error deleting version ${version.id}:`, error);
+      // Keep the most recent versions and current version
+      const versionsToKeep = versions.slice(-maxVersions);
+      const currentVersion = versionsData.currentVersion;
+      
+      if (currentVersion && !versionsToKeep.find(v => v.id === currentVersion)) {
+        const currentVersionData = versions.find(v => v.id === currentVersion);
+        if (currentVersionData) {
+          versionsToKeep.unshift(currentVersionData);
         }
       }
       
-      // Update versions list
-      const remainingVersions = versions.slice(0, maxVersions);
-      await fs.writeFile(versionsListPath, JSON.stringify(remainingVersions, null, 2));
+      // Delete old versions
+      const versionsToDelete = versions.filter(v => 
+        !versionsToKeep.find(keep => keep.id === v.id)
+      );
       
-      await this.updateHistory('cleanup', `تم حذف ${deletedCount} إصدارات قديمة`);
+      for (const version of versionsToDelete) {
+        await this.deleteVersion(version.id);
+      }
       
-      return { success: true, deleted: deletedCount };
+      console.log(`Cleaned up ${versionsToDelete.length} old versions`);
+      return { success: true, deletedCount: versionsToDelete.length };
     } catch (error) {
       console.error('Error cleaning up old versions:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Count files in directory
+   */
+  async countFiles(dir) {
+    try {
+      let count = 0;
+      const items = await fs.readdir(dir);
+      
+      for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stats = await fs.stat(fullPath);
+        
+        if (stats.isDirectory()) {
+          count += await this.countFiles(fullPath);
+        } else {
+          count++;
+        }
+      }
+      
+      return count;
+    } catch (error) {
+      console.error('Error counting files:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Calculate directory size
+   */
+  async calculateSize(dir) {
+    try {
+      let size = 0;
+      const items = await fs.readdir(dir);
+      
+      for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stats = await fs.stat(fullPath);
+        
+        if (stats.isDirectory()) {
+          size += await this.calculateSize(fullPath);
+        } else {
+          size += stats.size;
+        }
+      }
+      
+      return size;
+    } catch (error) {
+      console.error('Error calculating size:', error);
+      return 0;
     }
   }
 }

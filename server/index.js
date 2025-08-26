@@ -26,8 +26,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX), // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) * 60 * 1000 || 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX) || 100, // limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
@@ -53,8 +53,8 @@ io.on('connection', (socket) => {
       const sessionId = generateSessionId();
       const session = {
         id: sessionId,
-        language: data.language || 'ar',
-        projectType: data.projectType || 'nextjs',
+        language: data.language || 'en',
+        projectType: data.projectType || 'react',
         files: new Map(),
         history: [],
         todos: [],
@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
       console.log('Session created:', sessionId);
     } catch (error) {
       console.error('Error creating session:', error);
-      socket.emit('error', { message: 'فشل في إنشاء الجلسة' });
+      socket.emit('error', { message: 'Failed to create session' });
     }
   });
   
@@ -81,7 +81,7 @@ io.on('connection', (socket) => {
     try {
       const session = sessions.get(data.sessionId);
       if (!session) {
-        socket.emit('error', { message: 'الجلسة غير موجودة' });
+        socket.emit('error', { message: 'Session not found' });
         return;
       }
       
@@ -100,73 +100,146 @@ io.on('connection', (socket) => {
         }
       }
       
-      // Send response back to user
-      socket.emit('ai-response', {
-        message: response.message,
-        actions: response.actions || [],
-        session: session
-      });
+      // Send response back to client
+      socket.emit('ai-response', response);
       
     } catch (error) {
       console.error('Error processing message:', error);
-      socket.emit('error', { message: 'حدث خطأ في معالجة الرسالة' });
+      socket.emit('error', { message: 'Error processing message' });
     }
   });
-  
+
   // Handle file operations
-  socket.on('read-file', async (data) => {
+  socket.on('file-operation', async (data) => {
     try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+
       const fileManager = new FileManager(data.sessionId);
-      const result = await fileManager.readFile(data.filePath);
-      socket.emit('file-read', result);
+      let result;
+
+      switch (data.operation) {
+        case 'create':
+          result = await fileManager.createProject(data.projectType);
+          break;
+        case 'edit':
+          result = await fileManager.editFile(data.filePath, data.content, data.options);
+          break;
+        case 'read':
+          result = await fileManager.readFile(data.filePath);
+          break;
+        case 'delete':
+          result = await fileManager.deleteFile(data.filePath);
+          break;
+        case 'list':
+          result = await fileManager.listFiles(data.directory);
+          break;
+        default:
+          throw new Error(`Unknown operation: ${data.operation}`);
+      }
+
+      socket.emit('file-operation-result', { operation: data.operation, result });
     } catch (error) {
-      console.error('Error reading file:', error);
-      socket.emit('error', { message: 'فشل في قراءة الملف' });
+      console.error('Error in file operation:', error);
+      socket.emit('error', { message: 'File operation failed' });
     }
   });
-  
-  socket.on('edit-file', async (data) => {
+
+  // Handle version control operations
+  socket.on('version-operation', async (data) => {
     try {
-      const fileManager = new FileManager(data.sessionId);
-      const result = await fileManager.editFile(data.filePath, data.content, data.options);
-      socket.emit('file-edited', result);
-    } catch (error) {
-      console.error('Error editing file:', error);
-      socket.emit('error', { message: 'فشل في تعديل الملف' });
-    }
-  });
-  
-  // Handle project creation
-  socket.on('create-project', async (data) => {
-    try {
-      const fileManager = new FileManager(data.sessionId);
-      const result = await fileManager.createProject(data.projectType);
-      socket.emit('project-created', result);
-    } catch (error) {
-      console.error('Error creating project:', error);
-      socket.emit('error', { message: 'فشل في إنشاء المشروع' });
-    }
-  });
-  
-  // Handle versioning
-  socket.on('create-snapshot', async (data) => {
-    try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+
       const versionManager = new VersionManager(data.sessionId);
-      const result = await versionManager.createSnapshot(data.description);
-      socket.emit('snapshot-created', result);
+      let result;
+
+      switch (data.operation) {
+        case 'create-snapshot':
+          result = await versionManager.createSnapshot(data.description, data.metadata);
+          break;
+        case 'list-versions':
+          result = await versionManager.listVersions();
+          break;
+        case 'get-version':
+          result = await versionManager.getVersion(data.versionId);
+          break;
+        case 'restore-version':
+          result = await versionManager.restoreVersion(data.versionId);
+          break;
+        case 'compare-versions':
+          result = await versionManager.compareVersions(data.versionId1, data.versionId2);
+          break;
+        case 'export-version':
+          result = await versionManager.exportVersion(data.versionId, data.format);
+          break;
+        case 'delete-version':
+          result = await versionManager.deleteVersion(data.versionId);
+          break;
+        default:
+          throw new Error(`Unknown version operation: ${data.operation}`);
+      }
+
+      socket.emit('version-operation-result', { operation: data.operation, result });
     } catch (error) {
-      console.error('Error creating snapshot:', error);
-      socket.emit('error', { message: 'فشل في إنشاء النسخة' });
+      console.error('Error in version operation:', error);
+      socket.emit('error', { message: 'Version operation failed' });
     }
   });
-  
+
+  // Handle project operations
+  socket.on('project-operation', async (data) => {
+    try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+
+      const fileManager = new FileManager(data.sessionId);
+      let result;
+
+      switch (data.operation) {
+        case 'build':
+          result = await fileManager.buildProject();
+          break;
+        case 'install-deps':
+          result = await fileManager.installDependencies();
+          break;
+        case 'start-dev':
+          result = await fileManager.startDevServer();
+          break;
+        case 'get-stats':
+          result = await fileManager.getProjectStats();
+          break;
+        default:
+          throw new Error(`Unknown project operation: ${data.operation}`);
+      }
+
+      socket.emit('project-operation-result', { operation: data.operation, result });
+    } catch (error) {
+      console.error('Error in project operation:', error);
+      socket.emit('error', { message: 'Project operation failed' });
+    }
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
-    // Clean up session after some time
-    setTimeout(() => {
-      cleanupInactiveSessions();
-    }, 30 * 60 * 1000); // 30 minutes
+    
+    // Clean up session if inactive
+    for (const [sessionId, session] of sessions.entries()) {
+      if (session.socketId === socket.id) {
+        session.socketId = null;
+        break;
+      }
+    }
   });
 });
 
@@ -221,7 +294,12 @@ function cleanupInactiveSessions() {
 
 // API Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    activeSessions: sessions.size,
+    uptime: process.uptime()
+  });
 });
 
 app.get('/api/sessions', (req, res) => {
@@ -233,6 +311,46 @@ app.get('/api/sessions', (req, res) => {
     lastActivity: session.lastActivity
   }));
   res.json({ sessions: activeSessions });
+});
+
+app.get('/api/sessions/:sessionId', (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+  
+  res.json({
+    id: session.id,
+    language: session.language,
+    projectType: session.projectType,
+    createdAt: session.createdAt,
+    lastActivity: session.lastActivity,
+    fileCount: session.files.size,
+    historyLength: session.history.length
+  });
+});
+
+app.delete('/api/sessions/:sessionId', async (req, res) => {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = sessions.get(sessionId);
+    
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    // Clean up project files
+    const fileManager = new FileManager(sessionId);
+    await fileManager.cleanupProject();
+    
+    // Remove session
+    sessions.delete(sessionId);
+    
+    res.json({ message: 'Session deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    res.status(500).json({ error: 'Failed to delete session' });
+  }
 });
 
 // Serve React app for all other routes
@@ -252,7 +370,11 @@ server.listen(PORT, () => {
   console.log(`🚀 AI Coding Assistant Server running on port ${PORT}`);
   console.log(`📱 Frontend will be available at http://localhost:${PORT}`);
   console.log(`🔌 Socket.IO server ready for connections`);
+  console.log(`📊 Active sessions: ${sessions.size}`);
 });
+
+// Schedule cleanup of inactive sessions
+setInterval(cleanupInactiveSessions, 30 * 60 * 1000); // Every 30 minutes
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
@@ -269,4 +391,15 @@ process.on('SIGINT', () => {
     console.log('Server closed');
     process.exit(0);
   });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });

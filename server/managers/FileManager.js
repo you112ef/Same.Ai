@@ -1,482 +1,543 @@
 const fs = require('fs-extra');
 const path = require('path');
 const { exec } = require('child_process');
-const util = require('util');
-const execAsync = util.promisify(exec);
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 
 class FileManager {
   constructor(sessionId) {
     this.sessionId = sessionId;
-    this.projectPath = path.join(process.cwd(), 'projects', sessionId);
-    this.systemPath = path.join(this.projectPath, '.same');
+    this.projectDir = path.join(process.cwd(), 'projects', sessionId);
+    this.baseDir = path.join(this.projectDir, 'src');
   }
-  
+
+  /**
+   * Ensure project directory exists
+   */
   async ensureProjectDirectory() {
     try {
-      await fs.ensureDir(this.projectPath);
-      await fs.ensureDir(this.systemPath);
-      return { success: true, projectPath: this.projectPath };
+      await fs.ensureDir(this.projectDir);
+      await fs.ensureDir(this.baseDir);
+      console.log(`Project directory created: ${this.projectDir}`);
+      return true;
     } catch (error) {
-      console.error('Error ensuring project directory:', error);
+      console.error('Error creating project directory:', error);
       throw error;
     }
   }
-  
-  async createProject(projectType) {
+
+  /**
+   * Create a new project with specified type
+   */
+  async createProject(projectType = 'nextjs') {
     try {
-      await this.ensureProjectDirectory();
+      const projectConfig = this.getProjectConfig(projectType);
       
-      switch (projectType) {
-        case 'nextjs':
-          return await this.createNextJSProject();
-        case 'react':
-          return await this.createReactProject();
-        case 'vite':
-          return await this.createViteProject();
-        case 'vanilla':
-          return await this.createVanillaProject();
-        default:
-          throw new Error(`نوع المشروع غير مدعوم: ${projectType}`);
+      // Create project structure
+      for (const [filePath, content] of Object.entries(projectConfig.files)) {
+        const fullPath = path.join(this.baseDir, filePath);
+        await fs.ensureDir(path.dirname(fullPath));
+        await fs.writeFile(fullPath, content, 'utf8');
       }
+
+      // Create package.json
+      const packageJsonPath = path.join(this.projectDir, 'package.json');
+      await fs.writeFile(packageJsonPath, JSON.stringify(projectConfig.packageJson, null, 2));
+
+      // Install dependencies
+      await this.installDependencies();
+
+      console.log(`Project created successfully: ${projectType}`);
+      return { success: true, projectType, projectDir: this.projectDir };
     } catch (error) {
       console.error('Error creating project:', error);
       throw error;
     }
   }
-  
-  async createNextJSProject() {
-    try {
-      const { stdout, stderr } = await execAsync(
-        `npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --yes`,
-        { cwd: this.projectPath }
-      );
-      
-      if (stderr) {
-        console.warn('Next.js creation warnings:', stderr);
-      }
-      
-      // Create system files
-      await this.createSystemFiles('nextjs');
-      
-      return { success: true, projectType: 'nextjs', output: stdout };
-    } catch (error) {
-      console.error('Error creating Next.js project:', error);
-      throw error;
-    }
-  }
-  
-  async createReactProject() {
-    try {
-      const { stdout, stderr } = await execAsync(
-        `npx create-react-app . --template typescript --yes`,
-        { cwd: this.projectPath }
-      );
-      
-      if (stderr) {
-        console.warn('React creation warnings:', stderr);
-      }
-      
-      // Create system files
-      await this.createSystemFiles('react');
-      
-      return { success: true, projectType: 'react', output: stdout };
-    } catch (error) {
-      console.error('Error creating React project:', error);
-      throw error;
-    }
-  }
-  
-  async createViteProject() {
-    try {
-      const { stdout, stderr } = await execAsync(
-        `npm create vite@latest . -- --template react-ts --yes`,
-        { cwd: this.projectPath }
-      );
-      
-      if (stderr) {
-        console.warn('Vite creation warnings:', stderr);
-      }
-      
-      // Install dependencies
-      await execAsync('npm install', { cwd: this.projectPath });
-      
-      // Create system files
-      await this.createSystemFiles('vite');
-      
-      return { success: true, projectType: 'vite', output: stdout };
-    } catch (error) {
-      console.error('Error creating Vite project:', error);
-      throw error;
-    }
-  }
-  
-  async createVanillaProject() {
-    try {
-      // Create basic HTML structure
-      const htmlContent = `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشروع جديد</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div id="app">
-        <h1>مرحباً بك في مشروعك الجديد!</h1>
-        <p>ابدأ في تطوير تطبيقك هنا</p>
+
+  /**
+   * Get project configuration for different project types
+   */
+  getProjectConfig(projectType) {
+    const configs = {
+      nextjs: {
+        packageJson: {
+          name: `ai-project-${this.sessionId}`,
+          version: '1.0.0',
+          private: true,
+          scripts: {
+            dev: 'next dev',
+            build: 'next build',
+            start: 'next start',
+            lint: 'next lint'
+          },
+          dependencies: {
+            next: '^13.0.0',
+            react: '^18.0.0',
+            'react-dom': '^18.0.0',
+            typescript: '^4.9.0',
+            '@types/node': '^18.0.0',
+            '@types/react': '^18.0.0',
+            '@types/react-dom': '^18.0.0'
+          }
+        },
+        files: {
+          'pages/_app.tsx': `import type { AppProps } from 'next/app'
+import '../styles/globals.css'
+
+export default function App({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />
+}`,
+          'pages/index.tsx': `import { useState } from 'react'
+import Head from 'next/head'
+
+export default function Home() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Head>
+        <title>AI Generated Project</title>
+        <meta name="description" content="Generated by AI Coding Assistant" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center mb-8">
+          Welcome to Your AI Generated Project!
+        </h1>
+        
+        <div className="text-center">
+          <p className="text-xl mb-4">Counter: {count}</p>
+          <button
+            onClick={() => setCount(count + 1)}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Increment
+          </button>
+        </div>
+      </main>
     </div>
-    <script src="script.js"></script>
-</body>
-</html>`;
-      
-      const cssContent = `* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+  )
+}`,
+          'styles/globals.css': `@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}`,
+          'next.config.js': `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
 }
 
-#app {
-    text-align: center;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-p {
-    font-size: 1.2rem;
-    opacity: 0.9;
-}`;
-      
-      const jsContent = `// ملف JavaScript الرئيسي
-console.log('مرحباً بك في مشروعك الجديد!');
-
-// يمكنك إضافة الكود الخاص بك هنا
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('تم تحميل الصفحة بنجاح!');
-});`;
-      
-      await fs.writeFile(path.join(this.projectPath, 'index.html'), htmlContent);
-      await fs.writeFile(path.join(this.projectPath, 'styles.css'), cssContent);
-      await fs.writeFile(path.join(this.projectPath, 'script.js'), jsContent);
-      
-      // Create system files
-      await this.createSystemFiles('vanilla');
-      
-      return { success: true, projectType: 'vanilla' };
-    } catch (error) {
-      console.error('Error creating vanilla project:', error);
-      throw error;
-    }
-  }
-  
-  async createSystemFiles(projectType) {
-    try {
-      const systemFiles = {
-        'todos.md': `# مهام المشروع
-
-## المهام المكتملة
-- ✅ إنشاء المشروع (${projectType})
-
-## المهام الجارية
-- 🔄 إعداد البنية الأساسية
-
-## المهام المستقبلية
-- 📝 إضافة المكونات
-- 🎨 تخصيص التصميم
-- 📱 تحسين الاستجابة
-- 🚀 نشر المشروع
-
----
-*تم إنشاؤه تلقائياً بواسطة مساعد البرمجة الذكي*`,
-        
-        'wiki.md': `# دليل المشروع
-
-## الوصف
-مشروع ويب تم إنشاؤه بواسطة مساعد البرمجة الذكي
-
-## التقنيات المستخدمة
-- ${projectType}
-- HTML/CSS/JavaScript
-- TypeScript (إذا كان مدعوماً)
-
-## الهيكل
-- \`src/\` - ملفات المصدر
-- \`public/\` - الملفات العامة
-- \`styles/\` - ملفات التصميم
-- \`components/\` - المكونات
-
-## الأوامر المفيدة
-\`\`\`bash
-# تشغيل المشروع
-npm run dev
-# أو
-npm start
-
-# بناء المشروع
-npm run build
-
-# فحص الأخطاء
-npm run lint
-\`\`\`
-
----
-*تم إنشاؤه تلقائياً بواسطة مساعد البرمجة الذكي*`,
-        
-        'history.md': `# سجل التغييرات
-
-## الإصدار 1.0.0 - ${new Date().toLocaleDateString('ar-SA')}
-- 🎉 إنشاء المشروع بنجاح
-- 📁 إعداد البنية الأساسية
-- ⚙️ تكوين النظام
-- 📝 إنشاء ملفات التوثيق
-
----
-*تم إنشاؤه تلقائياً بواسطة مساعد البرمجة الذكي*`,
-        
-        'logs.md': `# سجل العمليات
-
-## ${new Date().toLocaleDateString('ar-SA')} - ${new Date().toLocaleTimeString('ar-SA')}
-- ✅ تم إنشاء المشروع بنجاح
-- 📁 تم إنشاء المجلدات الأساسية
-- ⚙️ تم إعداد ملفات النظام
-- 📝 تم إنشاء التوثيق
-
----
-*تم إنشاؤه تلقائياً بواسطة مساعد البرمجة الذكي*`,
-        
-        'settings.json': JSON.stringify({
-          language: 'ar',
-          projectType: projectType,
-          createdAt: new Date().toISOString(),
+module.exports = nextConfig`,
+          'tailwind.config.js': `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}`,
+          'tsconfig.json': `{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}`
+        }
+      },
+      react: {
+        packageJson: {
+          name: `ai-project-${this.sessionId}`,
           version: '1.0.0',
-          lastModified: new Date().toISOString()
-        }, null, 2)
-      };
-      
-      for (const [filename, content] of Object.entries(systemFiles)) {
-        await fs.writeFile(path.join(this.systemPath, filename), content, 'utf8');
+          private: true,
+          scripts: {
+            start: 'react-scripts start',
+            build: 'react-scripts build',
+            test: 'react-scripts test',
+            eject: 'react-scripts eject'
+          },
+          dependencies: {
+            react: '^18.0.0',
+            'react-dom': '^18.0.0',
+            'react-scripts': '5.0.1',
+            typescript: '^4.9.0',
+            '@types/node': '^18.0.0',
+            '@types/react': '^18.0.0',
+            '@types/react-dom': '^18.0.0'
+          },
+          browserslist: {
+            production: ['>0.2%', 'not dead', 'not op_mini all'],
+            development: ['last 1 chrome version', 'last 1 firefox version', 'last 1 safari version']
+          }
+        },
+        files: {
+          'public/index.html': `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="AI Generated React App" />
+    <title>AI Generated App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>`,
+          'src/index.tsx': `import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);`,
+          'src/App.tsx': `import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Welcome to Your AI Generated App!</h1>
+        <p>Counter: {count}</p>
+        <button onClick={() => setCount(count + 1)}>
+          Increment
+        </button>
+      </header>
+    </div>
+  );
+}
+
+export default App;`,
+          'src/index.css': `body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  color: #282c34;
+}
+
+button:hover {
+  background-color: #4fa8c7;
+}`,
+          'tsconfig.json': `{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}`
+        }
       }
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Error creating system files:', error);
-      throw error;
-    }
+    };
+
+    return configs[projectType] || configs.react;
   }
-  
-  async readFile(filePath) {
-    try {
-      const fullPath = path.join(this.projectPath, filePath);
-      
-      if (!await fs.pathExists(fullPath)) {
-        throw new Error(`الملف غير موجود: ${filePath}`);
-      }
-      
-      const content = await fs.readFile(fullPath, 'utf8');
-      const stats = await fs.stat(fullPath);
-      
-      return {
-        success: true,
-        content,
-        filePath,
-        size: stats.size,
-        modified: stats.mtime,
-        isDirectory: stats.isDirectory()
-      };
-    } catch (error) {
-      console.error('Error reading file:', error);
-      throw error;
-    }
-  }
-  
+
+  /**
+   * Edit or create a file
+   */
   async editFile(filePath, content, options = {}) {
     try {
-      const fullPath = path.join(this.projectPath, filePath);
-      
-      // Ensure directory exists
+      const fullPath = path.join(this.baseDir, filePath);
       await fs.ensureDir(path.dirname(fullPath));
       
-      let newContent;
-      
-      if (options.replace) {
-        // استبدال كامل
-        newContent = content;
-      } else if (options.insertAt) {
-        // إدراج في موضع محدد
-        let currentContent = '';
-        if (await fs.pathExists(fullPath)) {
-          currentContent = await fs.readFile(fullPath, 'utf8');
-        }
-        
-        const lines = currentContent.split('\n');
-        lines.splice(options.insertAt.line, 0, ...content.split('\n'));
-        newContent = lines.join('\n');
-      } else if (options.append) {
-        // إضافة في النهاية
-        let currentContent = '';
-        if (await fs.pathExists(fullPath)) {
-          currentContent = await fs.readFile(fullPath, 'utf8');
-        }
-        newContent = currentContent + '\n' + content;
+      if (options.append) {
+        await fs.appendFile(fullPath, content, 'utf8');
       } else {
-        // استبدال كامل (افتراضي)
-        newContent = content;
+        await fs.writeFile(fullPath, content, 'utf8');
       }
-      
-      // Write file
-      await fs.writeFile(fullPath, newContent, 'utf8');
-      
-      // Update history
-      await this.updateHistory(filePath, 'edit', content);
-      
-      return {
-        success: true,
-        filePath,
-        content: newContent,
-        size: newContent.length
-      };
+
+      console.log(`File updated: ${filePath}`);
+      return { success: true, filePath, fullPath };
     } catch (error) {
       console.error('Error editing file:', error);
       throw error;
     }
   }
-  
-  async runCommand(command, options = {}) {
+
+  /**
+   * Read file content
+   */
+  async readFile(filePath) {
+    try {
+      const fullPath = path.join(this.baseDir, filePath);
+      const content = await fs.readFile(fullPath, 'utf8');
+      return { success: true, content, filePath };
+    } catch (error) {
+      console.error('Error reading file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a file
+   */
+  async deleteFile(filePath) {
+    try {
+      const fullPath = path.join(this.baseDir, filePath);
+      await fs.remove(fullPath);
+      console.log(`File deleted: ${filePath}`);
+      return { success: true, filePath };
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * List all files in project
+   */
+  async listFiles(dir = '') {
+    try {
+      const targetDir = path.join(this.baseDir, dir);
+      const files = await fs.readdir(targetDir, { withFileTypes: true });
+      
+      const fileList = await Promise.all(
+        files.map(async (file) => {
+          const filePath = path.join(dir, file.name);
+          const fullPath = path.join(targetDir, file.name);
+          
+          if (file.isDirectory()) {
+            const subFiles = await this.listFiles(filePath);
+            return {
+              name: file.name,
+              type: 'directory',
+              path: filePath,
+              children: subFiles
+            };
+          } else {
+            const stats = await fs.stat(fullPath);
+            return {
+              name: file.name,
+              type: 'file',
+              path: filePath,
+              size: stats.size,
+              modified: stats.mtime
+            };
+          }
+        })
+      );
+
+      return fileList;
+    } catch (error) {
+      console.error('Error listing files:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Run a command in the project directory
+   */
+  async runCommand(command) {
     try {
       const { stdout, stderr } = await execAsync(command, {
-        cwd: this.projectPath,
-        timeout: options.timeout || 30000
+        cwd: this.projectDir,
+        timeout: 30000 // 30 seconds timeout
       });
-      
-      // Update logs
-      await this.updateLogs(command, stdout, stderr);
-      
+
       return { success: true, stdout, stderr };
     } catch (error) {
       console.error('Error running command:', error);
-      await this.updateLogs(command, '', error.message);
+      return { success: false, error: error.message, stderr: error.stderr };
+    }
+  }
+
+  /**
+   * Install project dependencies
+   */
+  async installDependencies() {
+    try {
+      console.log('Installing dependencies...');
+      const result = await this.runCommand('npm install');
+      
+      if (result.success) {
+        console.log('Dependencies installed successfully');
+      } else {
+        console.error('Failed to install dependencies:', result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error installing dependencies:', error);
       throw error;
     }
   }
-  
-  async getProjectStructure() {
+
+  /**
+   * Build the project
+   */
+  async buildProject() {
     try {
-      const structure = await this.scanDirectory(this.projectPath);
-      return { success: true, structure };
+      console.log('Building project...');
+      const result = await this.runCommand('npm run build');
+      
+      if (result.success) {
+        console.log('Project built successfully');
+      } else {
+        console.error('Failed to build project:', result.error);
+      }
+      
+      return result;
     } catch (error) {
-      console.error('Error scanning project structure:', error);
+      console.error('Error building project:', error);
       throw error;
     }
   }
-  
-  async scanDirectory(dirPath, relativePath = '') {
+
+  /**
+   * Start development server
+   */
+  async startDevServer() {
     try {
-      const items = await fs.readdir(dirPath);
-      const structure = [];
-      
-      for (const item of items) {
-        if (item === '.same' || item === 'node_modules') continue;
-        
-        const fullPath = path.join(dirPath, item);
-        const itemRelativePath = path.join(relativePath, item);
-        const stats = await fs.stat(fullPath);
-        
-        if (stats.isDirectory()) {
-          const children = await this.scanDirectory(fullPath, itemRelativePath);
-          structure.push({
-            type: 'directory',
-            name: item,
-            path: itemRelativePath,
-            children
-          });
-        } else {
-          structure.push({
-            type: 'file',
-            name: item,
-            path: itemRelativePath,
-            size: stats.size,
-            modified: stats.mtime
-          });
-        }
-      }
-      
-      return structure;
+      console.log('Starting development server...');
+      const result = await this.runCommand('npm run dev');
+      return result;
     } catch (error) {
-      console.error('Error scanning directory:', error);
-      return [];
+      console.error('Error starting dev server:', error);
+      throw error;
     }
   }
-  
-  async updateHistory(filePath, action, content) {
-    try {
-      const historyFile = path.join(this.systemPath, 'history.md');
-      const timestamp = new Date().toLocaleString('ar-SA');
-      
-      let history = '';
-      try {
-        history = await fs.readFile(historyFile, 'utf8');
-      } catch (error) {
-        history = '# سجل التغييرات\n\n';
-      }
-      
-      const entry = `\n## ${action} - ${timestamp}\n- الملف: \`${filePath}\`\n- الإجراء: ${action}\n- المحتوى: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}\n`;
-      history += entry;
-      
-      await fs.writeFile(historyFile, history, 'utf8');
-    } catch (error) {
-      console.error('Error updating history:', error);
-    }
-  }
-  
-  async updateLogs(command, stdout, stderr) {
-    try {
-      const logsFile = path.join(this.systemPath, 'logs.md');
-      const timestamp = new Date().toLocaleString('ar-SA');
-      
-      let logs = '';
-      try {
-        logs = await fs.readFile(logsFile, 'utf8');
-      } catch (error) {
-        logs = '# سجل العمليات\n\n';
-      }
-      
-      const entry = `\n## ${timestamp}\n- الأمر: \`${command}\`\n- النتيجة: ${stdout}\n- الأخطاء: ${stderr}\n`;
-      logs += entry;
-      
-      await fs.writeFile(logsFile, logs, 'utf8');
-    } catch (error) {
-      console.error('Error updating logs:', error);
-    }
-  }
-  
+
+  /**
+   * Clean up project files
+   */
   async cleanupProject() {
     try {
-      if (await fs.pathExists(this.projectPath)) {
-        await fs.remove(this.projectPath);
-        console.log(`Cleaned up project: ${this.sessionId}`);
-      }
+      await fs.remove(this.projectDir);
+      console.log(`Project cleaned up: ${this.projectDir}`);
+      return { success: true };
     } catch (error) {
       console.error('Error cleaning up project:', error);
+      throw error;
     }
+  }
+
+  /**
+   * Get project statistics
+   */
+  async getProjectStats() {
+    try {
+      const files = await this.listFiles();
+      const totalFiles = this.countFiles(files);
+      const totalSize = await this.calculateSize(files);
+      
+      return {
+        totalFiles,
+        totalSize,
+        projectDir: this.projectDir,
+        sessionId: this.sessionId
+      };
+    } catch (error) {
+      console.error('Error getting project stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Count total files recursively
+   */
+  countFiles(files) {
+    let count = 0;
+    for (const file of files) {
+      if (file.type === 'file') {
+        count++;
+      } else if (file.children) {
+        count += this.countFiles(file.children);
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Calculate total size recursively
+   */
+  async calculateSize(files) {
+    let totalSize = 0;
+    for (const file of files) {
+      if (file.type === 'file') {
+        totalSize += file.size || 0;
+      } else if (file.children) {
+        totalSize += await this.calculateSize(file.children);
+      }
+    }
+    return totalSize;
   }
 }
 

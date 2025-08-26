@@ -32,7 +32,7 @@ import {
   Phone as PhoneIcon,
   Tablet as TabletIcon,
   Laptop as LaptopIcon,
-  Desktop as DesktopIcon,
+  Computer as DesktopIcon,
   OpenInNew as OpenInNewIcon,
   Download as DownloadIcon,
   Share as ShareIcon,

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Box,
-  Drawer,
+  Paper,
   List,
   ListItem,
   ListItemButton,
@@ -9,40 +9,20 @@ import {
   ListItemText,
   Divider,
   Typography,
-  Chip,
-  Button,
-  Stack
+  IconButton,
+  Tooltip,
+  Chip
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const drawerWidth = 280;
-
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  width: drawerWidth,
-  flexShrink: 0,
-  '& .MuiDrawer-paper': {
-    width: drawerWidth,
-    boxSizing: 'border-box',
-    backgroundColor: theme.palette.background.paper,
-    borderRight: `1px solid ${theme.palette.divider}`,
-  },
-}));
-
-const SidebarHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3, 2),
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-}));
-
-const SidebarContent = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-}));
-
-const LanguageToggle = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderTop: `1px solid ${theme.palette.divider}`,
-}));
+import {
+  Chat as ChatIcon,
+  Folder as FolderIcon,
+  Visibility as PreviewIcon,
+  History as HistoryIcon,
+  CheckCircle as TodoIcon,
+  Language as LanguageIcon,
+  Wifi as WifiIcon,
+  WifiOff as WifiOffIcon
+} from '@mui/icons-material';
 
 interface Tab {
   id: string;
@@ -69,98 +49,114 @@ const Sidebar: React.FC<SidebarProps> = ({
   isConnected,
   sessionId
 }) => {
+  const isRTL = language === 'ar';
+
+  const getTabIcon = (icon: string) => {
+    switch (icon) {
+      case '💬': return <ChatIcon />;
+      case '📁': return <FolderIcon />;
+      case '👁️': return <PreviewIcon />;
+      case '📋': return <HistoryIcon />;
+      case '✅': return <TodoIcon />;
+      default: return <ChatIcon />;
+    }
+  };
+
+  const handleLanguageToggle = () => {
+    const newLanguage = language === 'ar' ? 'en' : 'ar';
+    onLanguageChange(newLanguage);
+  };
+
   return (
-    <StyledDrawer variant="permanent" anchor="right">
-      <SidebarHeader>
-        <Typography variant="h6" component="h1" gutterBottom>
-          مساعد البرمجة الذكي
+    <Paper
+      elevation={3}
+      sx={{
+        width: 280,
+        minHeight: '100vh',
+        borderRadius: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        direction: isRTL ? 'rtl' : 'ltr'
+      }}
+    >
+      <Box sx={{ p: 3, bgcolor: 'primary.main', color: 'primary.contrastText', textAlign: isRTL ? 'right' : 'left' }}>
+        <Typography variant="h5" gutterBottom fontWeight="bold">
+          {language === 'ar' ? 'مساعد البرمجة' : 'AI Coding'}
         </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.8 }}>
-          AI Coding Assistant
+        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+          {language === 'ar' ? 'المساعد الذكي للتطوير' : 'Smart Development Assistant'}
         </Typography>
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          {isConnected ? <WifiIcon color="success" /> : <WifiOffIcon color="error" />}
+          <Typography variant="body2" color={isConnected ? 'success.main' : 'error.main'}>
+            {isConnected ? (language === 'ar' ? 'متصل' : 'Connected') : (language === 'ar' ? 'غير متصل' : 'Disconnected')}
+          </Typography>
+        </Box>
         
         {sessionId && (
           <Chip
-            label={`الجلسة: ${sessionId.substring(0, 8)}...`}
+            label={language === 'ar' ? 'جلسة نشطة' : 'Active Session'}
             size="small"
-            sx={{ mt: 1, backgroundColor: 'rgba(255,255,255,0.2)' }}
+            color="primary"
+            variant="outlined"
           />
         )}
-      </SidebarHeader>
+      </Box>
 
-      <SidebarContent>
-        <List>
+      <Divider />
+
+      <Box sx={{ flex: 1 }}>
+        <List sx={{ p: 0 }}>
           {tabs.map((tab) => (
-            <ListItem key={tab.id} disablePadding>
+            <ListItem key={tab.id} sx={{ p: 0 }}>
               <ListItemButton
                 selected={activeTab === tab.id}
                 onClick={() => onTabChange(tab.id)}
                 sx={{
-                  borderRadius: 2,
-                  mb: 0.5,
+                  py: 2,
+                  px: 3,
                   '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
+                    bgcolor: 'primary.light',
                     color: 'primary.contrastText',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
+                    '&:hover': { bgcolor: 'primary.light' },
                   },
+                  '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  <span style={{ fontSize: '1.2rem' }}>{tab.icon}</span>
+                <ListItemIcon sx={{ color: activeTab === tab.id ? 'inherit' : 'text.secondary', minWidth: 40 }}>
+                  {getTabIcon(tab.icon)}
                 </ListItemIcon>
-                <ListItemText 
+                <ListItemText
                   primary={tab.label}
-                  primaryTypographyProps={{
-                    fontSize: '0.95rem',
-                    fontWeight: activeTab === tab.id ? 600 : 400,
-                  }}
+                  sx={{ textAlign: isRTL ? 'right' : 'left' }}
                 />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
+      </Box>
 
-        <Divider sx={{ my: 2 }} />
+      <Divider />
 
-        <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            {language === 'ar' ? 'حالة الاتصال' : 'Connection Status'}
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Tooltip title={language === 'ar' ? 'تغيير اللغة' : 'Change Language'}>
+            <IconButton onClick={handleLanguageToggle} size="small" sx={{ color: 'text.secondary' }}>
+              <LanguageIcon />
+            </IconButton>
+          </Tooltip>
+          
+          <Typography variant="caption" color="text.secondary">
+            {language === 'ar' ? 'الإصدار 1.0.0' : 'v1.0.0'}
           </Typography>
-          <Chip
-            label={isConnected ? (language === 'ar' ? 'متصل' : 'Connected') : (language === 'ar' ? 'غير متصل' : 'Disconnected')}
-            color={isConnected ? 'success' : 'error'}
-            size="small"
-            sx={{ width: '100%' }}
-          />
         </Box>
-      </SidebarContent>
-
-      <LanguageToggle>
-        <Typography variant="subtitle2" gutterBottom>
-          {language === 'ar' ? 'اللغة' : 'Language'}
-        </Typography>
-        <Stack direction="row" spacing={1}>
-          <Button
-            variant={language === 'ar' ? 'contained' : 'outlined'}
-            size="small"
-            onClick={() => onLanguageChange('ar')}
-            sx={{ flex: 1 }}
-          >
-            العربية
-          </Button>
-          <Button
-            variant={language === 'en' ? 'contained' : 'outlined'}
-            size="small"
-            onClick={() => onLanguageChange('en')}
-            sx={{ flex: 1 }}
-          >
-            English
-          </Button>
-        </Stack>
-      </LanguageToggle>
-    </StyledDrawer>
+      </Box>
+    </Paper>
   );
 };
 

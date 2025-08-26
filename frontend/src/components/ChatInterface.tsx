@@ -1,66 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Box,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
+import { 
+  Box, 
+  Paper, 
+  TextField, 
+  Button, 
+  Typography, 
+  List, 
+  ListItem, 
   Avatar,
   Divider,
-  Chip,
-  IconButton,
-  Alert,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from '@mui/material';
-import { Send, SmartToy, Person } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+import { Send as SendIcon, SmartToy as BotIcon, Person as UserIcon } from '@mui/icons-material';
 import { Socket } from 'socket.io-client';
-
-const ChatContainer = styled(Box)(({ theme }) => ({
-  height: 'calc(100vh - 100px)',
-  display: 'flex',
-  flexDirection: 'column',
-}));
-
-const ChatHeader = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-}));
-
-const MessagesContainer = styled(Box)(({ theme }) => ({
-  flex: 1,
-  overflow: 'auto',
-  padding: theme.spacing(2),
-  backgroundColor: theme.palette.background.default,
-  borderRadius: theme.shape.borderRadius,
-  marginBottom: theme.spacing(2),
-}));
-
-const MessageItem = styled(ListItem)(({ theme }) => ({
-  marginBottom: theme.spacing(1),
-  padding: theme.spacing(1),
-  borderRadius: theme.shape.borderRadius,
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
-
-const InputContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(1),
-  alignItems: 'flex-end',
-}));
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  type: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
+  metadata?: any;
 }
 
 interface ChatInterfaceProps {
@@ -69,75 +29,69 @@ interface ChatInterfaceProps {
   language: 'ar' | 'en';
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({
-  socket,
-  sessionId,
-  language
-}) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ socket, sessionId, language }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on('ai-response', (data: { message: string; actions: any[] }) => {
-        const newMessage: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: data.message,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, newMessage]);
-        setIsLoading(false);
-      });
+  const isRTL = language === 'ar';
 
-      socket.on('error', (error: { message: string }) => {
-        setError(error.message);
-        setIsLoading(false);
-      });
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  }, [messages]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('ai-response', (data: { content: string; metadata?: any }) => {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        type: 'assistant',
+        content: data.content,
+        timestamp: new Date(),
+        metadata: data.metadata
+      };
+      setMessages(prev => [...prev, newMessage]);
+      setIsLoading(false);
+    });
+
+    socket.on('error', (data: { message: string }) => {
+      setError(data.message);
+      setIsLoading(false);
+    });
 
     return () => {
-      if (socket) {
-        socket.off('ai-response');
-        socket.off('error');
-      }
+      socket.off('ai-response');
+      socket.off('error');
     };
   }, [socket]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !socket || !sessionId || isLoading) return;
+    if (!inputMessage.trim() || !socket || !sessionId || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      role: 'user',
-      content: inputValue,
+      type: 'user',
+      content: inputMessage,
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    setInputMessage('');
     setIsLoading(true);
     setError(null);
 
     try {
-      socket.emit('user-message', {
+      socket.emit('ai-message', {
         sessionId,
-        message: inputValue
+        message: inputMessage
       });
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setError('فشل في إرسال الرسالة');
+    } catch (err) {
+      setError(language === 'ar' ? 'خطأ في إرسال الرسالة' : 'Error sending message');
       setIsLoading(false);
     }
   };
@@ -149,160 +103,93 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
-  const getWelcomeMessage = () => {
-    if (language === 'ar') {
-      return `مرحباً بك في مساعد البرمجة الذكي! 🚀
-
-يمكنني مساعدتك في:
-• إنشاء مشاريع ويب جديدة (Next.js, React, Vite)
-• تعديل وتطوير الكود الموجود
-• إضافة ميزات جديدة
-• حل المشاكل البرمجية
-• نشر المشاريع
-
-اكتب طلبك وسأساعدك في تنفيذه!`;
-    } else {
-      return `Welcome to AI Coding Assistant! 🚀
-
-I can help you with:
-• Creating new web projects (Next.js, React, Vite)
-• Modifying and developing existing code
-• Adding new features
-• Solving programming problems
-• Deploying projects
-
-Type your request and I'll help you implement it!`;
-    }
-  };
-
-  // Add welcome message on first load
-  useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([{
-        id: 'welcome',
-        role: 'assistant',
-        content: getWelcomeMessage(),
-        timestamp: new Date()
-      }]);
-    }
-  }, [language]);
-
   return (
-    <ChatContainer>
-      <ChatHeader>
-        <Typography variant="h5" gutterBottom>
-          {language === 'ar' ? 'المحادثة مع المساعد الذكي' : 'Chat with AI Assistant'}
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.8 }}>
-          {language === 'ar' 
-            ? 'اكتب طلبك وسأساعدك في تطوير تطبيقك' 
-            : 'Type your request and I\'ll help you develop your application'
-          }
-        </Typography>
-      </ChatHeader>
-
-      <MessagesContainer>
-        <List>
-          {messages.map((message) => (
-            <MessageItem key={message.id}>
-              <Avatar
-                sx={{
-                  bgcolor: message.role === 'user' ? 'primary.main' : 'secondary.main',
-                  mr: 2
-                }}
-              >
-                {message.role === 'user' ? <Person /> : <SmartToy />}
-              </Avatar>
-              <ListItemText
-                primary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      {message.role === 'user' 
-                        ? (language === 'ar' ? 'أنت' : 'You')
-                        : (language === 'ar' ? 'المساعد الذكي' : 'AI Assistant')
-                      }
-                    </Typography>
-                    <Chip
-                      label={message.timestamp.toLocaleTimeString('ar-SA')}
-                      size="small"
-                      variant="outlined"
-                    />
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Typography variant="h5" gutterBottom align={isRTL ? 'right' : 'left'}>
+        {language === 'ar' ? 'المحادثة الذكية' : 'AI Chat'}
+      </Typography>
+      
+      <Paper elevation={2} sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', mb: 2 }}>
+        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+          {messages.length === 0 ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
+              <BotIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
+              <Typography variant="h6" align="center">
+                {language === 'ar' ? 'مرحباً! كيف يمكنني مساعدتك في تطوير مشروعك؟' : 'Hello! How can I help you develop your project?'}
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {messages.map((message) => (
+                <ListItem key={message.id} sx={{ display: 'flex', justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start', p: 0, mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', maxWidth: '70%', gap: 1 }}>
+                    <Avatar sx={{ bgcolor: message.type === 'user' ? 'primary.main' : 'secondary.main', width: 32, height: 32 }}>
+                      {message.type === 'user' ? <UserIcon /> : <BotIcon />}
+                    </Avatar>
+                    <Paper elevation={1} sx={{ p: 2, bgcolor: message.type === 'user' ? 'primary.light' : 'grey.100' }}>
+                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                        {message.content}
+                      </Typography>
+                    </Paper>
                   </Box>
-                }
-                secondary={
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      whiteSpace: 'pre-wrap',
-                      lineHeight: 1.6,
-                      fontFamily: 'inherit'
-                    }}
-                  >
-                    {message.content}
-                  </Typography>
-                }
-              />
-            </MessageItem>
-          ))}
-          
-          {isLoading && (
-            <MessageItem>
-              <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
-                <SmartToy />
-              </Avatar>
-              <ListItemText
-                primary={
+                </ListItem>
+              ))}
+              
+              {isLoading && (
+                <ListItem sx={{ display: 'flex', justifyContent: 'flex-start', p: 0, mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      {language === 'ar' ? 'المساعد الذكي' : 'AI Assistant'}
-                    </Typography>
-                    <CircularProgress size={16} />
+                    <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}>
+                      <BotIcon />
+                    </Avatar>
+                    <Paper elevation={1} sx={{ p: 2, bgcolor: 'grey.100' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CircularProgress size={16} />
+                        <Typography variant="body2">
+                          {language === 'ar' ? 'جاري الكتابة...' : 'Typing...'}
+                        </Typography>
+                      </Box>
+                    </Paper>
                   </Box>
-                }
-                secondary={
-                  <Typography variant="body2" color="textSecondary">
-                    {language === 'ar' ? 'جاري المعالجة...' : 'Processing...'}
-                  </Typography>
-                }
-              />
-            </MessageItem>
+                </ListItem>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </List>
           )}
-        </List>
-        <div ref={messagesEndRef} />
-      </MessagesContainer>
+        </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      <InputContainer>
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder={
-            language === 'ar' 
-              ? 'اكتب طلبك هنا... مثال: أنشئ مشروع Next.js جديد'
-              : 'Type your request here... Example: Create a new Next.js project'
-          }
-          variant="outlined"
-          disabled={isLoading}
-        />
-        <Button
-          variant="contained"
-          onClick={handleSendMessage}
-          disabled={!inputValue.trim() || isLoading}
-          sx={{ minWidth: 60, height: 56 }}
-        >
-          <Send />
-        </Button>
-      </InputContainer>
-    </ChatContainer>
+        <Divider />
+        
+        <Box sx={{ p: 2 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              fullWidth
+              multiline
+              maxRows={4}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={language === 'ar' ? 'اكتب رسالتك هنا...' : 'Type your message here...'}
+              disabled={isLoading || !socket}
+            />
+            <Button
+              variant="contained"
+              onClick={handleSendMessage}
+              disabled={!inputMessage.trim() || isLoading || !socket}
+              sx={{ minWidth: 56, height: 56 }}
+            >
+              <SendIcon />
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 
