@@ -1,0 +1,24 @@
+{
+  "name": "ai-coding-assistant-shared",
+  "version": "1.0.0",
+  "description": "Shared types and constants for AI Coding Assistant",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.0"
+  },
+  "keywords": [
+    "types",
+    "constants",
+    "shared",
+    "ai",
+    "coding",
+    "assistant"
+  ],
+  "author": "AI Coding Assistant Team",
+  "license": "MIT"
+}
