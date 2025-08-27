@@ -1,403 +1,405 @@
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-const fs = require('fs-extra');
-const { v4: uuidv4 } = require('uuid');
-const winston = require('winston');
-const cron = require('node-cron');
+require('dotenv').config();
 
-// Import custom modules
-const ContainerManager = require('./modules/ContainerManager');
-const FileManager = require('./modules/FileManager');
-const AIService = require('./modules/AIService');
-const VersionManager = require('./modules/VersionManager');
-const ProjectManager = require('./modules/ProjectManager');
-const SecurityManager = require('./modules/SecurityManager');
-const LivePreviewManager = require('./modules/LivePreviewManager');
-
-// Initialize logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'ai-coding-assistant' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
-  ]
+const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple()
-  }));
-}
+// Middleware
+app.use(helmet());
+app.use(compression());
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-class AICodingAssistant {
-  constructor() {
-    this.app = express();
-    this.server = http.createServer(this.app);
-    this.io = socketIo(this.server, {
-      cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
-        methods: ["GET", "POST"]
-      }
-    });
-    
-    this.activeSessions = new Map();
-    this.containerManager = new ContainerManager();
-    this.fileManager = new FileManager();
-    this.aiService = new AIService();
-    this.versionManager = new VersionManager();
-    this.projectManager = new ProjectManager();
-    this.securityManager = new SecurityManager();
-    this.livePreviewManager = new LivePreviewManager();
-    
-    this.setupMiddleware();
-    this.setupRoutes();
-    this.setupSocketHandlers();
-    this.setupCronJobs();
-  }
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) * 60 * 1000 || 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX) || 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api/', limiter);
 
-  setupMiddleware() {
-    // Security middleware
-    this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'", "'unsafe-eval'"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "ws:", "wss:"]
-        }
-      }
-    }));
+// Serve static files
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-    // Rate limiting
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
-      message: 'Too many requests from this IP, please try again later.'
-    });
-    this.app.use('/api/', limiter);
+// Import managers
+const FileManager = require('./managers/FileManager');
+const VersionManager = require('./managers/VersionManager');
+const AIManager = require('./managers/AIManager');
 
-    // CORS
-    this.app.use(cors({
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
-      credentials: true
-    }));
+// Store active sessions
+const sessions = new Map();
 
-    // Compression
-    this.app.use(compression());
-
-    // Body parsing
-    this.app.use(express.json({ limit: '50mb' }));
-    this.app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-    // Static files
-    this.app.use('/static', express.static(path.join(__dirname, '../client/dist')));
-  }
-
-  setupRoutes() {
-    // Health check
-    this.app.get('/health', (req, res) => {
-      res.json({ status: 'OK', timestamp: new Date().toISOString() });
-    });
-
-    // API Routes
-    this.app.use('/api/chat', require('./routes/chat'));
-    this.app.use('/api/files', require('./routes/files'));
-    this.app.use('/api/projects', require('./routes/projects'));
-    this.app.use('/api/versions', require('./routes/versions'));
-    this.app.use('/api/preview', require('./routes/preview'));
-    this.app.use('/api/deploy', require('./routes/deploy'));
-    this.app.use('/api/tools', require('./routes/tools'));
-
-    // Serve React app
-    this.app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-    });
-
-    // Error handling middleware
-    this.app.use((err, req, res, next) => {
-      logger.error('Unhandled error:', err);
-      res.status(500).json({ 
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-      });
-    });
-  }
-
-  setupSocketHandlers() {
-    this.io.on('connection', (socket) => {
-      logger.info(`Client connected: ${socket.id}`);
-
-      // Create new session
-      socket.on('create-session', async (data) => {
-        try {
-          const sessionId = uuidv4();
-          const session = await this.createSession(sessionId, data);
-          socket.sessionId = sessionId;
-          socket.emit('session-created', { sessionId, session });
-          logger.info(`Session created: ${sessionId}`);
-        } catch (error) {
-          logger.error('Error creating session:', error);
-          socket.emit('error', { message: 'Failed to create session' });
-        }
-      });
-
-      // Handle chat messages
-      socket.on('chat-message', async (data) => {
-        try {
-          const { message, sessionId } = data;
-          const response = await this.handleChatMessage(sessionId, message);
-          socket.emit('ai-response', response);
-        } catch (error) {
-          logger.error('Error handling chat message:', error);
-          socket.emit('error', { message: 'Failed to process message' });
-        }
-      });
-
-      // File operations
-      socket.on('file-operation', async (data) => {
-        try {
-          const { operation, sessionId, ...params } = data;
-          const result = await this.handleFileOperation(sessionId, operation, params);
-          socket.emit('file-operation-result', result);
-        } catch (error) {
-          logger.error('Error in file operation:', error);
-          socket.emit('error', { message: 'File operation failed' });
-        }
-      });
-
-      // Live preview updates
-      socket.on('preview-request', async (data) => {
-        try {
-          const { sessionId } = data;
-          const previewUrl = await this.livePreviewManager.getPreviewUrl(sessionId);
-          socket.emit('preview-update', { url: previewUrl });
-        } catch (error) {
-          logger.error('Error getting preview:', error);
-          socket.emit('error', { message: 'Preview unavailable' });
-        }
-      });
-
-      // Disconnect handling
-      socket.on('disconnect', () => {
-        logger.info(`Client disconnected: ${socket.id}`);
-        if (socket.sessionId) {
-          this.cleanupSession(socket.sessionId);
-        }
-      });
-    });
-  }
-
-  async createSession(sessionId, data) {
-    const session = {
-      id: sessionId,
-      createdAt: new Date(),
-      language: data.language || 'ar',
-      projectType: data.projectType || 'nextjs',
-      containerId: null,
-      projectPath: null,
-      isActive: true
-    };
-
-    // Create container for this session
-    const container = await this.containerManager.createContainer(sessionId);
-    session.containerId = container.id;
-    session.projectPath = container.projectPath;
-
-    // Initialize project
-    await this.projectManager.initializeProject(session.projectPath, session.projectType);
-
-    // Store session
-    this.activeSessions.set(sessionId, session);
-
-    return session;
-  }
-
-  async handleChatMessage(sessionId, message) {
-    const session = this.activeSessions.get(sessionId);
-    if (!session) {
-      throw new Error('Session not found');
-    }
-
-    // Analyze message and determine actions
-    const analysis = await this.aiService.analyzeMessage(message, session.language);
-    
-    // Execute actions based on analysis
-    const results = await this.executeActions(session, analysis.actions);
-    
-    // Generate response
-    const response = await this.aiService.generateResponse(message, results, session.language);
-    
-    // Save to session history
-    await this.saveToSessionHistory(sessionId, message, response, results);
-    
-    return response;
-  }
-
-  async executeActions(session, actions) {
-    const results = [];
-    
-    for (const action of actions) {
-      try {
-        let result;
-        
-        switch (action.type) {
-          case 'startup':
-            result = await this.projectManager.startup(session.projectPath, action.params);
-            break;
-          case 'edit_file':
-            result = await this.fileManager.editFile(session.projectPath, action.params);
-            break;
-          case 'read_file':
-            result = await this.fileManager.readFile(session.projectPath, action.params);
-            break;
-          case 'run_linter':
-            result = await this.fileManager.runLinter(session.projectPath);
-            break;
-          case 'bash':
-            result = await this.containerManager.executeCommand(session.containerId, action.params.command);
-            break;
-          case 'web_search':
-            result = await this.aiService.webSearch(action.params.query);
-            break;
-          case 'version_save':
-            result = await this.versionManager.saveVersion(session.projectPath, action.params.description);
-            break;
-          default:
-            logger.warn(`Unknown action type: ${action.type}`);
-        }
-        
-        results.push({ action, result, success: true });
-      } catch (error) {
-        logger.error(`Action execution failed:`, error);
-        results.push({ action, error: error.message, success: false });
-      }
-    }
-    
-    return results;
-  }
-
-  async handleFileOperation(sessionId, operation, params) {
-    const session = this.activeSessions.get(sessionId);
-    if (!session) {
-      throw new Error('Session not found');
-    }
-
-    switch (operation) {
-      case 'read':
-        return await this.fileManager.readFile(session.projectPath, params);
-      case 'edit':
-        return await this.fileManager.editFile(session.projectPath, params);
-      case 'create':
-        return await this.fileManager.createFile(session.projectPath, params);
-      case 'delete':
-        return await this.fileManager.deleteFile(session.projectPath, params);
-      case 'list':
-        return await this.fileManager.listFiles(session.projectPath, params);
-      default:
-        throw new Error(`Unknown file operation: ${operation}`);
-    }
-  }
-
-  async saveToSessionHistory(sessionId, message, response, results) {
-    const session = this.activeSessions.get(sessionId);
-    if (!session) return;
-
-    const historyEntry = {
-      timestamp: new Date(),
-      message,
-      response,
-      results,
-      sessionId
-    };
-
-    const historyPath = path.join(session.projectPath, '.same', 'history.md');
-    await fs.ensureFile(historyPath);
-    
-    const historyContent = `## ${historyEntry.timestamp.toISOString()}\n\n**User:** ${message}\n\n**AI Response:** ${response.content}\n\n**Actions:** ${JSON.stringify(results, null, 2)}\n\n---\n\n`;
-    await fs.appendFile(historyPath, historyContent);
-  }
-
-  async cleanupSession(sessionId) {
-    const session = this.activeSessions.get(sessionId);
-    if (!session) return;
-
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+  
+  // Create new session
+  socket.on('create-session', async (data) => {
     try {
-      // Stop live preview
-      await this.livePreviewManager.stopPreview(sessionId);
+      const sessionId = generateSessionId();
+      const session = {
+        id: sessionId,
+        language: data.language || 'en',
+        projectType: data.projectType || 'react',
+        files: new Map(),
+        history: [],
+        todos: [],
+        createdAt: new Date(),
+        lastActivity: new Date()
+      };
       
-      // Cleanup container
-      await this.containerManager.cleanupContainer(session.containerId);
+      sessions.set(sessionId, session);
       
-      // Remove from active sessions
-      this.activeSessions.delete(sessionId);
+      // Initialize project directory
+      const fileManager = new FileManager(sessionId);
+      await fileManager.ensureProjectDirectory();
       
-      logger.info(`Session cleaned up: ${sessionId}`);
+      socket.emit('session-created', { sessionId, session });
+      console.log('Session created:', sessionId);
     } catch (error) {
-      logger.error(`Error cleaning up session ${sessionId}:`, error);
+      console.error('Error creating session:', error);
+      socket.emit('error', { message: 'Failed to create session' });
     }
-  }
-
-  setupCronJobs() {
-    // Clean up inactive sessions every hour
-    cron.schedule('0 * * * *', async () => {
-      const now = new Date();
-      const inactiveThreshold = 2 * 60 * 60 * 1000; // 2 hours
+  });
+  
+  // Handle user messages
+  socket.on('user-message', async (data) => {
+    try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
       
-      for (const [sessionId, session] of this.activeSessions.entries()) {
-        const sessionAge = now - session.createdAt;
-        if (sessionAge > inactiveThreshold) {
-          await this.cleanupSession(sessionId);
+      // Update last activity
+      session.lastActivity = new Date();
+      
+      // Process message with AI
+      const aiManager = new AIManager(session);
+      const response = await aiManager.processMessage(data.message);
+      
+      // Execute actions if any
+      if (response.actions && response.actions.length > 0) {
+        const fileManager = new FileManager(data.sessionId);
+        for (const action of response.actions) {
+          await executeAction(action, fileManager, session);
         }
       }
-    });
+      
+      // Send response back to client
+      socket.emit('ai-response', response);
+      
+    } catch (error) {
+      console.error('Error processing message:', error);
+      socket.emit('error', { message: 'Error processing message' });
+    }
+  });
 
-    // Clean up old logs daily
-    cron.schedule('0 0 * * *', async () => {
-      try {
-        const logsDir = path.join(__dirname, 'logs');
-        const files = await fs.readdir(logsDir);
-        const now = new Date();
-        const retentionDays = 7;
-        
-        for (const file of files) {
-          const filePath = path.join(logsDir, file);
-          const stats = await fs.stat(filePath);
-          const fileAge = now - stats.mtime;
-          
-          if (fileAge > retentionDays * 24 * 60 * 60 * 1000) {
-            await fs.remove(filePath);
-            logger.info(`Cleaned up old log file: ${file}`);
-          }
-        }
-      } catch (error) {
-        logger.error('Error cleaning up logs:', error);
+  // Handle file operations
+  socket.on('file-operation', async (data) => {
+    try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
       }
-    });
-  }
 
-  start(port = process.env.PORT || 3000) {
-    this.server.listen(port, () => {
-      logger.info(`AI Coding Assistant server running on port ${port}`);
-      logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
+      const fileManager = new FileManager(data.sessionId);
+      let result;
+
+      switch (data.operation) {
+        case 'create':
+          result = await fileManager.createProject(data.projectType);
+          break;
+        case 'edit':
+          result = await fileManager.editFile(data.filePath, data.content, data.options);
+          break;
+        case 'read':
+          result = await fileManager.readFile(data.filePath);
+          break;
+        case 'delete':
+          result = await fileManager.deleteFile(data.filePath);
+          break;
+        case 'list':
+          result = await fileManager.listFiles(data.directory);
+          break;
+        default:
+          throw new Error(`Unknown operation: ${data.operation}`);
+      }
+
+      socket.emit('file-operation-result', { operation: data.operation, result });
+    } catch (error) {
+      console.error('Error in file operation:', error);
+      socket.emit('error', { message: 'File operation failed' });
+    }
+  });
+
+  // Handle version control operations
+  socket.on('version-operation', async (data) => {
+    try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+
+      const versionManager = new VersionManager(data.sessionId);
+      let result;
+
+      switch (data.operation) {
+        case 'create-snapshot':
+          result = await versionManager.createSnapshot(data.description, data.metadata);
+          break;
+        case 'list-versions':
+          result = await versionManager.listVersions();
+          break;
+        case 'get-version':
+          result = await versionManager.getVersion(data.versionId);
+          break;
+        case 'restore-version':
+          result = await versionManager.restoreVersion(data.versionId);
+          break;
+        case 'compare-versions':
+          result = await versionManager.compareVersions(data.versionId1, data.versionId2);
+          break;
+        case 'export-version':
+          result = await versionManager.exportVersion(data.versionId, data.format);
+          break;
+        case 'delete-version':
+          result = await versionManager.deleteVersion(data.versionId);
+          break;
+        default:
+          throw new Error(`Unknown version operation: ${data.operation}`);
+      }
+
+      socket.emit('version-operation-result', { operation: data.operation, result });
+    } catch (error) {
+      console.error('Error in version operation:', error);
+      socket.emit('error', { message: 'Version operation failed' });
+    }
+  });
+
+  // Handle project operations
+  socket.on('project-operation', async (data) => {
+    try {
+      const session = sessions.get(data.sessionId);
+      if (!session) {
+        socket.emit('error', { message: 'Session not found' });
+        return;
+      }
+
+      const fileManager = new FileManager(data.sessionId);
+      let result;
+
+      switch (data.operation) {
+        case 'build':
+          result = await fileManager.buildProject();
+          break;
+        case 'install-deps':
+          result = await fileManager.installDependencies();
+          break;
+        case 'start-dev':
+          result = await fileManager.startDevServer();
+          break;
+        case 'get-stats':
+          result = await fileManager.getProjectStats();
+          break;
+        default:
+          throw new Error(`Unknown project operation: ${data.operation}`);
+      }
+
+      socket.emit('project-operation-result', { operation: data.operation, result });
+    } catch (error) {
+      console.error('Error in project operation:', error);
+      socket.emit('error', { message: 'Project operation failed' });
+    }
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+    
+    // Clean up session if inactive
+    for (const [sessionId, session] of sessions.entries()) {
+      if (session.socketId === socket.id) {
+        session.socketId = null;
+        break;
+      }
+    }
+  });
+});
+
+// Execute AI actions
+async function executeAction(action, fileManager, session) {
+  try {
+    switch (action.type) {
+      case 'create_project':
+        await fileManager.createProject(action.params.projectType);
+        break;
+      case 'edit_file':
+        await fileManager.editFile(action.params.filePath, action.params.content, action.params.options);
+        break;
+      case 'run_command':
+        await fileManager.runCommand(action.params.command);
+        break;
+      case 'create_snapshot':
+        const versionManager = new VersionManager(session.id);
+        await versionManager.createSnapshot(action.params.description);
+        break;
+      default:
+        console.log('Unknown action type:', action.type);
+    }
+  } catch (error) {
+    console.error('Error executing action:', error);
+    throw error;
   }
 }
 
-// Start the server
-const server = new AICodingAssistant();
-server.start();
+// Generate unique session ID
+function generateSessionId() {
+  return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
 
-module.exports = AICodingAssistant;
+// Clean up inactive sessions
+function cleanupInactiveSessions() {
+  const now = new Date();
+  const inactiveThreshold = 60 * 60 * 1000; // 1 hour
+  
+  for (const [sessionId, session] of sessions.entries()) {
+    if (now - session.lastActivity > inactiveThreshold) {
+      console.log('Cleaning up inactive session:', sessionId);
+      sessions.delete(sessionId);
+      
+      // Clean up project files
+      const FileManager = require('./managers/FileManager');
+      const fileManager = new FileManager(sessionId);
+      fileManager.cleanupProject().catch(console.error);
+    }
+  }
+}
+
+// API Routes
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    activeSessions: sessions.size,
+    uptime: process.uptime()
+  });
+});
+
+app.get('/api/sessions', (req, res) => {
+  const activeSessions = Array.from(sessions.values()).map(session => ({
+    id: session.id,
+    language: session.language,
+    projectType: session.projectType,
+    createdAt: session.createdAt,
+    lastActivity: session.lastActivity
+  }));
+  res.json({ sessions: activeSessions });
+});
+
+app.get('/api/sessions/:sessionId', (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+  
+  res.json({
+    id: session.id,
+    language: session.language,
+    projectType: session.projectType,
+    createdAt: session.createdAt,
+    lastActivity: session.lastActivity,
+    fileCount: session.files.size,
+    historyLength: session.history.length
+  });
+});
+
+app.delete('/api/sessions/:sessionId', async (req, res) => {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = sessions.get(sessionId);
+    
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    // Clean up project files
+    const fileManager = new FileManager(sessionId);
+    await fileManager.cleanupProject();
+    
+    // Remove session
+    sessions.delete(sessionId);
+    
+    res.json({ message: 'Session deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    res.status(500).json({ error: 'Failed to delete session' });
+  }
+});
+
+// Serve React app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🚀 AI Coding Assistant Server running on port ${PORT}`);
+  console.log(`📱 Frontend will be available at http://localhost:${PORT}`);
+  console.log(`🔌 Socket.IO server ready for connections`);
+  console.log(`📊 Active sessions: ${sessions.size}`);
+});
+
+// Schedule cleanup of inactive sessions
+setInterval(cleanupInactiveSessions, 30 * 60 * 1000); // Every 30 minutes
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});

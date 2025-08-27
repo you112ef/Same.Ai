@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  ai-coding-assistant:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - PROJECTS_DIR=/app/projects
+      - VERSIONS_DIR=/app/versions
+      - UPLOADS_DIR=/app/uploads
+      - LOG_LEVEL=info
+      - LOG_FILE=/app/logs/app.log
+      - REDIS_URL=redis://redis:6379
+      - REDIS_ENABLED=true
+    volumes:
+      - ./projects:/app/projects
+      - ./versions:/app/versions
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+  # Optional: Add a database service for persistent data
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=ai_coding_assistant
+      - POSTGRES_USER=ai_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ai_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+  # Optional: Add a monitoring service
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+volumes:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  ai-network:
+    driver: bridge

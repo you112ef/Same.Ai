@@ -1,298 +1,360 @@
-# 🤖 مساعد البرمجة الذكي - AI Coding Assistant
+# AI Coding Assistant
 
-نظام ذكاء اصطناعي سحابي متكامل لتطوير تطبيقات الويب بدون تسجيل دخول، يوفر محادثة ذكية، معاينة حية، إدارة ملفات، وإدارة إصدارات كاملة.
+An intelligent, AI-powered web development assistant that helps developers create, modify, and improve code in real-time. Built with modern web technologies and OpenAI integration.
 
-## ✨ المميزات الرئيسية
+## 🚀 Features
 
-- **🚀 بدون تسجيل دخول** - ابدأ البرمجة فوراً
-- **💬 محادثة ذكية** - تفاعل طبيعي مع المساعد الذكي
-- **👁️ معاينة حية** - مشاهدة التطبيق فوراً مع كل تعديل
-- **📁 إدارة ملفات متقدمة** - قراءة، تعديل، إنشاء، حذف الملفات
-- **📋 إدارة إصدارات** - حفظ واسترجاع أي مرحلة من المشروع
-- **✅ قائمة المهام** - تتبع تقدم المشروع
-- **🌐 دعم متعدد اللغات** - العربية والإنجليزية
-- **🔒 أمان قصوى** - حماية كاملة وخصوصية
-- **📱 واجهة متجاوبة** - تعمل على جميع الأجهزة
+### **AI-Powered Development**
+- **Code Generation** - Generate components, functions, and APIs from natural language
+- **Code Review** - Get AI feedback on your code quality and best practices
+- **Bug Detection** - Identify and fix issues automatically
+- **Documentation** - Generate comprehensive code documentation
+- **Testing** - Create test suites and test cases with AI assistance
 
-## 🛠️ التقنيات المستخدمة
+### **Real-Time Collaboration**
+- **Live Editing** - Collaborate with team members in real-time
+- **Cursor Tracking** - See where your teammates are working
+- **Conflict Resolution** - Handle simultaneous edits gracefully
+- **Chat Integration** - Built-in team communication
 
-### Backend
-- **Node.js** - بيئة التشغيل
-- **Express.js** - إطار العمل
-- **Socket.IO** - التواصل المباشر
-- **OpenAI API** - الذكاء الاصطناعي
-- **Docker** - حاويات معزولة
-- **Winston** - تسجيل الأحداث
+### **Project Management**
+- **Multiple Project Types** - Support for React, Next.js, Vue, Angular, and more
+- **Version Control** - Built-in versioning with snapshots and rollbacks
+- **File Management** - Comprehensive file operations and organization
+- **Project Templates** - Pre-built project structures for common frameworks
 
-### Frontend
-- **React** - واجهة المستخدم
-- **Vite** - أداة البناء
-- **Socket.IO Client** - التواصل مع الخادم
-- **CSS3** - التصميم والأنيميشن
+### **Modern Development Tools**
+- **TypeScript Support** - Full TypeScript integration
+- **Hot Reload** - Instant feedback during development
+- **ESLint & Prettier** - Code quality and formatting
+- **Build Tools** - Integrated build and deployment workflows
 
-## 📦 التثبيت والتشغيل
+## 🛠️ Technology Stack
 
-### المتطلبات الأساسية
+### **Backend**
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework
+- **Socket.IO** - Real-time communication
+- **OpenAI API** - AI-powered code generation
+- **PostgreSQL** - Database (optional)
+- **Redis** - Session storage (optional)
+
+### **Frontend**
+- **React** - User interface framework
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Socket.IO Client** - Real-time client communication
+
+### **Development Tools**
+- **Docker** - Containerization
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+- **Jest** - Testing framework
+- **Webpack** - Module bundling
+
+## 📦 Installation
+
+### **Prerequisites**
 - Node.js 18+ 
-- Docker
-- Bun (اختياري، للسرعة)
+- npm or yarn
+- OpenAI API key
 
-### خطوات التثبيت
-
-1. **استنساخ المشروع**
+### **Quick Start**
 ```bash
-git clone <repository-url>
+# Clone the repository
+git clone https://github.com/your-username/ai-coding-assistant.git
 cd ai-coding-assistant
-```
 
-2. **تثبيت التبعيات**
-```bash
+# Install dependencies
 npm install
-```
 
-3. **إعداد المتغيرات البيئية**
-```bash
-# إنشاء ملف .env
+# Set up environment variables
 cp .env.example .env
+# Edit .env with your OpenAI API key
 
-# تعديل المتغيرات
-OPENAI_API_KEY=your_openai_api_key
-WORKSPACE_PATH=/workspace
-CLIENT_URL=http://localhost:5173
-NODE_ENV=development
-```
-
-4. **تشغيل التطبيق**
-```bash
-# تشغيل الخادم والواجهة معاً
+# Start the development server
 npm run dev
-
-# أو تشغيل منفصل
-npm run server  # الخادم على المنفذ 3000
-npm run client  # الواجهة على المنفذ 5173
 ```
 
-## 🚀 الاستخدام
-
-### بدء جلسة جديدة
-1. افتح المتصفح على `http://localhost:5173`
-2. اختر اللغة (العربية أو الإنجليزية)
-3. ابدأ المحادثة مع المساعد الذكي
-
-### أمثلة على الأوامر
-```
-"أنشئ مشروع Next.js جديد"
-"أضف صفحة جديدة للمنتجات"
-"تخصيص التصميم باللون الأزرق"
-"فحص الكود للأخطاء"
-"نشر المشروع على Netlify"
-```
-
-## 📁 هيكل المشروع
-
-```
-ai-coding-assistant/
-├── server/                 # الخادم الخلفي
-│   ├── index.js           # نقطة البداية
-│   ├── modules/           # وحدات النظام
-│   │   ├── AIService.js   # خدمة الذكاء الاصطناعي
-│   │   ├── ContainerManager.js # مدير الحاويات
-│   │   ├── FileManager.js # مدير الملفات
-│   │   ├── VersionManager.js # مدير الإصدارات
-│   │   ├── ProjectManager.js # مدير المشاريع
-│   │   ├── SecurityManager.js # مدير الأمان
-│   │   └── LivePreviewManager.js # مدير المعاينة
-│   └── routes/            # مسارات API
-│       └── chat.js        # مسارات المحادثة
-├── client/                # الواجهة الأمامية
-│   ├── src/
-│   │   ├── components/    # مكونات React
-│   │   │   ├── ChatInterface.jsx
-│   │   │   ├── FileExplorer.jsx
-│   │   │   ├── LivePreview.jsx
-│   │   │   ├── VersionControl.jsx
-│   │   │   └── TodoList.jsx
-│   │   ├── App.jsx        # المكون الرئيسي
-│   │   └── main.jsx       # نقطة البداية
-│   ├── public/            # الملفات العامة
-│   └── index.html         # ملف HTML الرئيسي
-├── docs/                  # التوثيق
-├── tests/                 # الاختبارات
-└── package.json           # إعدادات المشروع
-```
-
-## 🔧 الإعدادات المتقدمة
-
-### إعداد Docker
+### **Docker Installation**
 ```bash
-# بناء الصورة
+# Build and run with Docker
+docker-compose up --build
+
+# Or build manually
 docker build -t ai-coding-assistant .
-
-# تشغيل الحاوية
-docker run -p 3000:3000 -p 5173:5173 ai-coding-assistant
+docker run -p 3000:3000 ai-coding-assistant
 ```
 
-### إعداد OpenAI API
-1. احصل على مفتاح API من [OpenAI](https://platform.openai.com/)
-2. أضف المفتاح إلى ملف `.env`
-3. تأكد من وجود رصيد كافي في الحساب
+## 🔧 Configuration
 
-### تخصيص الأمان
-```javascript
-// في server/modules/SecurityManager.js
-const securityConfig = {
-  maxFileSize: 10 * 1024 * 1024, // 10MB
-  maxProjectSize: 100 * 1024 * 1024, // 100MB
-  sessionDuration: 2 * 60 * 60 * 1000, // 2 hours
-  allowedCommands: ['bun', 'npm', 'git'],
-  forbiddenCommands: ['rm -rf', 'sudo', 'chmod 777']
-};
+### **Environment Variables**
+Create a `.env` file with the following variables:
+
+```env
+# OpenAI Configuration
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-4
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Security
+SESSION_SECRET=your_secret_here
+CORS_ORIGIN=*
+
+# File Storage
+STORAGE_PATH=./projects
+MAX_FILE_SIZE=10485760
 ```
 
-## 🧪 الاختبار
+### **AI Model Configuration**
+```env
+OPENAI_MODEL=gpt-4
+OPENAI_MAX_TOKENS=2000
+OPENAI_TEMPERATURE=0.7
+OPENAI_TOP_P=0.9
+```
 
+## 🎯 Usage
+
+### **Creating a New Project**
+1. **Start a Session** - Create a new development session
+2. **Choose Project Type** - Select React, Next.js, Vue, or vanilla
+3. **AI-Assisted Setup** - Let AI generate initial project structure
+4. **Start Coding** - Begin development with AI assistance
+
+### **AI Code Generation**
+```typescript
+// Ask AI to generate a component
+"Create a React component for a user profile card with avatar, name, and bio"
+
+// AI will generate:
+function UserProfileCard({ user }) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <img src={user.avatar} alt={user.name} className="w-16 h-16 rounded-full" />
+      <h2 className="text-xl font-semibold mt-4">{user.name}</h2>
+      <p className="text-gray-600 mt-2">{user.bio}</p>
+    </div>
+  );
+}
+```
+
+### **Real-Time Collaboration**
+- **Join Session** - Connect to an existing development session
+- **Live Editing** - See changes in real-time
+- **Team Chat** - Communicate with team members
+- **Version Control** - Create snapshots and manage versions
+
+## 📚 API Documentation
+
+### **REST API Endpoints**
+- `GET /api/health` - Server health check
+- `GET /api/sessions` - List active sessions
+- `GET /api/sessions/:id` - Get session details
+- `DELETE /api/sessions/:id` - Delete session
+
+### **WebSocket Events**
+- `create-session` - Create new development session
+- `user-message` - Send message to AI
+- `file-operation` - Perform file operations
+- `version-operation` - Version control operations
+- `project-operation` - Project management operations
+
+### **File Operations**
+- Create, read, update, delete files
+- List project structure
+- Search and filter files
+- Batch operations
+
+### **Version Control**
+- Create snapshots
+- Compare versions
+- Restore previous versions
+- Export versions
+
+## 🧪 Testing
+
+### **Run Tests**
 ```bash
-# تشغيل جميع الاختبارات
+# Run all tests
 npm test
 
-# اختبار الوحدات
-npm run test:unit
+# Run tests in watch mode
+npm run test:watch
 
-# اختبار التكامل
-npm run test:integration
+# Run tests with coverage
+npm run test:coverage
 
-# اختبار الأداء
-npm run test:performance
+# Run specific test file
+npm test -- --grep "UserProfileCard"
 ```
 
-## 📊 المراقبة والأداء
-
-### مؤشرات الأداء
-- زمن الاستجابة: < 2 ثانية
-- استخدام الذاكرة: < 512MB لكل جلسة
-- عدد الجلسات المتزامنة: غير محدود
-- معدل الأخطاء: < 1%
-
-### السجلات
-```bash
-# عرض سجلات الخادم
-tail -f logs/server.log
-
-# عرض سجلات الأخطاء
-tail -f logs/error.log
-
-# عرض سجلات الأمان
-tail -f logs/security.log
+### **Test Structure**
+```
+tests/
+├── unit/           # Unit tests
+├── integration/    # Integration tests
+├── e2e/           # End-to-end tests
+└── fixtures/      # Test data
 ```
 
-## 🔒 الأمان والخصوصية
+## 🚀 Deployment
 
-### حماية البيانات
-- تشفير AES-256 للبيانات الحساسة
-- عزل كامل بين الجلسات
-- مسح تلقائي للبيانات بعد انتهاء الجلسة
-- فحص الأوامر المشبوهة
-
-### القيود الأخلاقية
-- منع نسخ المواقع الحساسة
-- منع تنفيذ الأوامر الخطيرة
-- فحص المحتوى غير الأخلاقي
-- حماية من هجمات XSS و SQL Injection
-
-## 🌐 النشر
-
-### Netlify
+### **Production Build**
 ```bash
-# بناء المشروع
-npm run build
+# Build frontend
+npm run build:frontend
 
-# نشر تلقائي
-netlify deploy --prod
+# Build all
+npm run build:all
+
+# Start production server
+npm start
 ```
 
-### Vercel
-```bash
-# تثبيت Vercel CLI
-npm i -g vercel
-
-# النشر
-vercel --prod
+### **Environment Variables for Production**
+```env
+NODE_ENV=production
+PORT=3000
+OPENAI_API_KEY=your_production_key
+SESSION_SECRET=your_production_secret
+CORS_ORIGIN=https://yourdomain.com
 ```
 
-### Docker
+### **Docker Deployment**
 ```bash
-# بناء الصورة للإنتاج
+# Production build
 docker build -t ai-coding-assistant:prod .
 
-# تشغيل في الإنتاج
-docker run -d -p 80:3000 -p 443:5173 ai-coding-assistant:prod
+# Run with environment variables
+docker run -d \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e OPENAI_API_KEY=your_key \
+  ai-coding-assistant:prod
 ```
 
-## 🤝 المساهمة
+## 🔒 Security
 
-نرحب بالمساهمات! يرجى اتباع الخطوات التالية:
+### **Authentication & Authorization**
+- Session-based authentication
+- Rate limiting on API endpoints
+- CORS configuration
+- Input validation and sanitization
 
-1. Fork المشروع
-2. إنشاء فرع للميزة الجديدة (`git checkout -b feature/amazing-feature`)
-3. Commit التغييرات (`git commit -m 'Add amazing feature'`)
-4. Push للفرع (`git push origin feature/amazing-feature`)
-5. فتح Pull Request
+### **File Security**
+- File type validation
+- Size limits
+- Path traversal protection
+- Secure file operations
 
-### معايير الكود
-- استخدام ESLint و Prettier
-- كتابة اختبارات للوظائف الجديدة
-- تحديث التوثيق
-- اتباع معايير Git Commit
+### **API Security**
+- Rate limiting
+- Request validation
+- Error handling
+- Logging and monitoring
 
-## 📄 الترخيص
+## 📊 Monitoring & Logging
 
-هذا المشروع مرخص تحت رخصة MIT - راجع ملف [LICENSE](LICENSE) للتفاصيل.
+### **Health Checks**
+- Server health endpoint
+- Database connectivity
+- External service status
+- Performance metrics
 
-## 🆘 الدعم
+### **Logging**
+- Structured logging with Winston
+- Log levels (error, warn, info, debug)
+- File and console output
+- Log rotation
 
-### المشاكل الشائعة
+### **Metrics**
+- Request/response times
+- Error rates
+- Resource usage
+- Custom business metrics
 
-**المساعد لا يستجيب**
-- تحقق من اتصال الإنترنت
-- تأكد من صحة مفتاح OpenAI API
-- راجع سجلات الخادم
+## 🤝 Contributing
 
-**المعاينة لا تعمل**
-- تأكد من تشغيل خادم المعاينة
-- تحقق من المنافذ المفتوحة
-- راجع إعدادات CORS
+### **Development Setup**
+```bash
+# Fork and clone
+git clone https://github.com/your-username/ai-coding-assistant.git
 
-**مشاكل في الملفات**
-- تحقق من صلاحيات المجلدات
-- تأكد من وجود مساحة كافية
-- راجع سجلات الأخطاء
+# Install dependencies
+npm install
 
-### التواصل
-- 📧 البريد الإلكتروني: support@example.com
-- 💬 Discord: [رابط السيرفر]
-- 📖 التوثيق: [رابط التوثيق]
-- 🐛 الإبلاغ عن الأخطاء: [رابط Issues]
+# Set up development environment
+cp .env.example .env
+npm run dev
+```
 
-## 🗺️ خارطة الطريق
+### **Code Style**
+- ESLint configuration
+- Prettier formatting
+- TypeScript strict mode
+- Conventional commits
 
-### الإصدار 1.1
-- [ ] دعم React Native
-- [ ] محرر تصميم بصري
-- [ ] تكامل Firebase
-- [ ] دعم الفرق التعاونية
+### **Pull Request Process**
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-### الإصدار 1.2
-- [ ] دعم Flutter
-- [ ] تحسين الذكاء الاصطناعي
-- [ ] إضافة قوالب جاهزة
-- [ ] دعم قواعد البيانات
+## 📄 License
 
-### الإصدار 2.0
-- [ ] تطبيق سطح المكتب
-- [ ] دعم الذكاء الاصطناعي المحلي
-- [ ] تكاملات متقدمة
-- [ ] نظام المدفوعات
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### **Documentation**
+- [API Reference](docs/api/README.md)
+- [User Guides](docs/user-guides/README.md)
+- [Examples](docs/examples/README.md)
+- [Getting Started](docs/getting-started/README.md)
+
+### **Community**
+- [GitHub Issues](https://github.com/your-username/ai-coding-assistant/issues)
+- [Discussions](https://github.com/your-username/ai-coding-assistant/discussions)
+- [Wiki](https://github.com/your-username/ai-coding-assistant/wiki)
+
+### **Contact**
+- Email: support@aicodingassistant.com
+- Twitter: [@AICodingAssistant](https://twitter.com/AICodingAssistant)
+- Discord: [Join our server](https://discord.gg/aicodingassistant)
+
+## 🗺️ Roadmap
+
+### **Version 1.1**
+- [ ] Enhanced AI models support
+- [ ] Advanced collaboration features
+- [ ] Project templates library
+- [ ] Performance optimizations
+
+### **Version 1.2**
+- [ ] Mobile app support
+- [ ] Advanced analytics
+- [ ] Plugin system
+- [ ] Enterprise features
+
+### **Version 2.0**
+- [ ] Multi-language support
+- [ ] Advanced AI capabilities
+- [ ] Cloud deployment
+- [ ] Team management
+
+## 🙏 Acknowledgments
+
+- OpenAI for providing the AI capabilities
+- The open-source community for amazing tools and libraries
+- All contributors and users of this project
 
 ---
 
-**صنع بـ ❤️ بواسطة فريق مساعد البرمجة الذكي**
+**Made with ❤️ by the AI Coding Assistant Team**
+
+*Empowering developers with AI-powered tools for better code, faster development, and seamless collaboration.*

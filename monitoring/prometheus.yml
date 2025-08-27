@@ -1,0 +1,103 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # AI Coding Assistant Backend
+  - job_name: 'ai-coding-assistant-backend'
+    static_configs:
+      - targets: ['ai-coding-assistant:3001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Node.js Application Metrics
+  - job_name: 'nodejs'
+    static_configs:
+      - targets: ['ai-coding-assistant:3001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    honor_labels: true
+
+  # Docker Metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['localhost:9323']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # System Metrics
+  - job_name: 'system'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+# Alerting rules
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Recording rules
+recording_rules:
+  - name: "ai_coding_assistant_requests_total"
+    expr: "rate(http_requests_total[5m])"
+    labels:
+      service: "ai-coding-assistant"
+      component: "backend"
+
+  - name: "ai_coding_assistant_response_time_avg"
+    expr: "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])"
+    labels:
+      service: "ai-coding-assistant"
+      component: "backend"
+
+  - name: "ai_coding_assistant_error_rate"
+    expr: "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m])"
+    labels:
+      service: "ai-coding-assistant"
+      component: "backend"
+
+  - name: "redis_memory_usage_percent"
+    expr: "redis_memory_used_bytes / redis_memory_max_bytes * 100"
+    labels:
+      service: "redis"
+
+  - name: "nodejs_heap_usage_percent"
+    expr: "nodejs_heap_size_used_bytes / nodejs_heap_size_total_bytes * 100"
+    labels:
+      service: "ai-coding-assistant"
+      component: "backend"
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 200h
+    retention.size: 512MB
+
+# External labels
+external_labels:
+  environment: "production"
+  application: "ai-coding-assistant"
+  version: "1.0.0"
